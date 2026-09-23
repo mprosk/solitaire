@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123d2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hated Game" />
+    <meta
+      name="description"
+      content="A browser-based solitaire game known as The Hated Game."
+    />
+    <title>The Hated Game</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button id="menu-button" class="icon-button" aria-label="Open menu" type="button">
+        <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <h1>The Hated Game</h1>
+      <div class="score" aria-live="polite">
+        <span>Score</span>
+        <strong id="score">1</strong>
+      </div>
+    </header>
+
+    <main>
+      <section class="upper-board" aria-label="Deck and up piles">
+        <div class="pile-group">
+          <div>
+            <button id="stock" class="card-slot" type="button" aria-label="Draw from deck"></button>
+          </div>
+          <div>
+            <button
+              id="waste"
+              class="card-slot"
+              type="button"
+              aria-label="Top revealed card"
+            ></button>
+          </div>
+        </div>
+
+        <div class="foundation-zone">
+          <div id="foundations" class="foundations" aria-label="Up piles"></div>
+        </div>
+      </section>
+
+      <section class="play-area" aria-label="Playing area">
+        <div id="tableau" class="tableau"></div>
+
+        <div class="side-pile-wrap">
+          <button
+            id="reserve"
+            class="card-slot reserve"
+            type="button"
+            aria-label="Sideways pile"
+          ></button>
+        </div>
+
+        <div
+          id="waste-preview"
+          class="waste-preview"
+          role="region"
+          aria-label="Revealed cards, top card fully exposed"
+          tabindex="-1"
+          hidden
+        >
+          <div id="waste-cards" class="waste-cards" role="list"></div>
+          <span class="waste-preview-hint">Tap anywhere to close</span>
+        </div>
+      </section>
+
+      <p id="status" class="status" aria-live="polite">
+        Drag a card or stack to where it should go.
+      </p>
+      <button id="board-new-game" class="board-new-game primary-button" type="button" hidden>
+        New game
+      </button>
+    </main>
+
+    <footer id="build-info" class="build-info">v0.1.3</footer>
+
+    <dialog id="menu-dialog" class="menu-dialog">
+      <div class="dialog-heading">
+        <h2>Game</h2>
+        <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
+          ×
+        </button>
+      </div>
+      <div class="menu-actions">
+        <button id="new-game" type="button">New game</button>
+        <button id="restart-game" type="button">Restart this deal</button>
+        <button id="undo" type="button">Undo</button>
+        <button id="show-rules" type="button">How to play</button>
+      </div>
+    </dialog>
+
+    <dialog id="rules-dialog" class="rules-dialog">
+      <div class="dialog-heading">
+        <h2>How to play</h2>
+        <button id="close-rules" class="icon-button dark" type="button" aria-label="Close rules">
+          ×
+        </button>
+      </div>
+      <div class="rules-copy">
+        <p>
+          Build the six vertical stacks downward in immediate rank order, alternating
+          colors. Aces and kings wrap: 2–A–K.
+        </p>
+        <p>
+          Move only a whole vertical stack. Its top card must fit beneath the bottom card
+          of its destination. Play bottom cards into the up piles.
+        </p>
+        <p>
+          Up piles build upward by suit, one rank at a time, and wrap from king to ace.
+          Start another suit with a card matching the first up card's rank. Cards may be
+          taken back from the up piles.
+        </p>
+        <p>
+          The sideways pile can only play directly into an up pile. When its exposed card
+          is moved, the next card turns over.
+        </p>
+        <p>
+          Turn the deck over one card at a time; there is no second pass. An empty vertical
+          slot must be filled from the revealed deck pile before more cards can be turned.
+          If the revealed pile is empty, the top deck card fills the slot directly.
+        </p>
+        <p>
+          Click the revealed card to fill the first empty slot. Double-click an eligible
+          vertical or sideways card to send it to its up pile. Double-clicking the revealed
+          card prefers its up pile, then an empty slot. Long-press the revealed card—or tap
+          its count—to view every card in that pile.
+        </p>
+        <p>
+          You win once the deck is empty and both the revealed and sideways piles have no
+          more than one card. You may return to the board and finish clearing it.
+        </p>
+      </div>
+      <button id="rules-done" class="primary-button" type="button">Done</button>
+    </dialog>
+
+    <dialog id="result-dialog" class="result-dialog">
+      <div id="result-symbol" class="result-symbol" aria-hidden="true"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-message"></p>
+      <div class="result-actions">
+        <button id="keep-playing" type="button">Keep looking</button>
+        <button id="result-new-game" class="primary-button" type="button">New game</button>
+      </div>
+    </dialog>
+
+    <script src="game.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

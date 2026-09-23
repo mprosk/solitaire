@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
+      <rect width="24" height="42" fill="#7a1a28"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#a83242"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#a83242"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#a83242"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#a83242"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#c24a58"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#c24a58"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Felt background fills the whole canvas so any mask shape looks clean -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!--
+    Same three-card composition as icon-source.svg, but drawn at 0.66 scale
+    with explicit coordinates (instead of a scaled group) so the card-back
+    pattern keeps its natural 24x42 tile — scaling the group would scale the
+    userSpaceOnUse pattern and leave hairline tiling seams.
+    Cards are 110.88 x 155.1, grouped about the center (256, 256) with a small
+    gap (~5.6px) between the sideways center card and the outer cards.
+  -->
+
+  <!-- Left vertical card -->
+  <g transform="translate(62 178.45)" filter="url(#shadow)">
+    <rect width="110.88" height="155.1" rx="9.2" ry="9.2" fill="#f3e9d5"/>
+    <rect x="5.28" y="5.28" width="100.32" height="144.54" rx="6.6" ry="6.6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+
+  <!-- Right vertical card -->
+  <g transform="translate(339.12 178.45)" filter="url(#shadow)">
+    <rect width="110.88" height="155.1" rx="9.2" ry="9.2" fill="#f3e9d5"/>
+    <rect x="5.28" y="5.28" width="100.32" height="144.54" rx="6.6" ry="6.6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+
+  <!-- Center sideways card: 155.1 wide x 110.88 tall, centered at (256, 256) -->
+  <g transform="translate(178.45 200.56)" filter="url(#shadow)">
+    <rect width="155.1" height="110.88" rx="9.2" ry="9.2" fill="#f3e9d5"/>
+    <rect x="5.28" y="5.28" width="144.54" height="100.32" rx="6.6" ry="6.6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+</svg>

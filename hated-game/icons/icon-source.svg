@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
+      <rect width="24" height="42" fill="#7a1a28"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#a83242"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#a83242"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#a83242"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#a83242"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#c24a58"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#c24a58"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Felt background -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!--
+    Three equally sized cards (168 x 235), centered as a group at (256, 256).
+    The center card is sideways (rotated 90 deg). The two outer cards stand
+    vertical with a small gap (~8px) to the center card — almost touching but
+    not overlapping. Their outer edges are intentionally cropped by the canvas.
+  -->
+
+  <!-- Left vertical card: small gap to the sideways card; outer edge cropped -->
+  <g transform="translate(-38 138.5)" filter="url(#shadow)">
+    <rect width="168" height="235" rx="14" ry="14" fill="#f3e9d5"/>
+    <rect x="8" y="8" width="152" height="219" rx="10" ry="10"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="3"/>
+  </g>
+
+  <!-- Right vertical card: mirrored gap; outer edge cropped -->
+  <g transform="translate(382 138.5)" filter="url(#shadow)">
+    <rect width="168" height="235" rx="14" ry="14" fill="#f3e9d5"/>
+    <rect x="8" y="8" width="152" height="219" rx="10" ry="10"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="3"/>
+  </g>
+
+  <!-- Center sideways card: rotated 90 deg about the canvas center (256, 256) -->
+  <g transform="translate(256 256) rotate(90)" filter="url(#shadow)">
+    <rect x="-84" y="-117.5" width="168" height="235" rx="14" ry="14" fill="#f3e9d5"/>
+    <rect x="-76" y="-109.5" width="152" height="219" rx="10" ry="10"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="3"/>
+  </g>
+</svg>
