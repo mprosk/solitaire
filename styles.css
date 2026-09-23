@@ -1,0 +1,130 @@
+:root {
+  color-scheme: light;
+  --felt: #18563d;
+  --felt-dark: #103d2c;
+  --felt-light: #216d4e;
+  --cream: #f7f1e5;
+  --ink: #19201d;
+  --gold: #e8c46b;
+  font-family: Georgia, "Times New Roman", ui-serif, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 50% -10%, var(--felt-light), transparent 52%),
+    var(--felt);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.topbar {
+  display: grid;
+  place-items: center;
+  min-height: 64px;
+  padding: 8px 16px;
+  background: rgba(8, 37, 26, 0.58);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+main {
+  width: min(420px, 100%);
+  margin: 0 auto;
+  padding: clamp(28px, 6vw, 48px) clamp(16px, 4vw, 28px);
+}
+
+.lede {
+  margin: 0 0 1.25rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.game-list {
+  display: grid;
+  gap: 12px;
+}
+
+a.game-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0.85rem 1.15rem 0.85rem 0.85rem;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--cream);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+a.game-link .game-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+a.game-link .game-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--felt);
+}
+
+a.game-link:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+a.game-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+a.game-link .game-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+a.game-link .game-meta {
+  color: var(--felt-dark);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.build-info {
+  position: fixed;
+  right: 10px;
+  bottom: 8px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+}

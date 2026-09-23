@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123d2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Solitaire" />
+    <meta name="description" content="Pick a solitaire game to play." />
+    <title>Solitaire</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css?v=0.1.1" />
+    <style>
+      /* Critical layout inlined so a stale SW can't leave bare blue links. */
+      .game-list {
+        display: grid;
+        gap: 12px;
+      }
+      a.game-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0.85rem 1.15rem 0.85rem 0.85rem;
+        color: #19201d;
+        text-decoration: none;
+        background: #f7f1e5;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      }
+      a.game-link .game-main {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 0;
+      }
+      a.game-link .game-icon {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #18563d;
+      }
+      a.game-link .game-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+      }
+      a.game-link .game-meta {
+        color: #103d2c;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .lede {
+        margin: 0 0 1.25rem;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 1.05rem;
+        text-align: center;
+      }
+      main {
+        width: min(420px, 100%);
+        margin: 0 auto;
+        padding: clamp(28px, 6vw, 48px) clamp(16px, 4vw, 28px);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Solitaire</h1>
+    </header>
+
+    <main>
+      <p class="lede">Choose a game</p>
+      <nav class="game-list" aria-label="Games">
+        <a class="game-link" href="./hated-game/">
+          <span class="game-main">
+            <img
+              class="game-icon"
+              src="./hated-game/icons/icon-source.svg"
+              alt=""
+              width="48"
+              height="48"
+            />
+            <span class="game-name">The Hated Game</span>
+          </span>
+          <span class="game-meta">Play</span>
+        </a>
+        <a class="game-link" href="./larrys-game/">
+          <span class="game-main">
+            <span class="game-name">Larry’s Game</span>
+          </span>
+          <span class="game-meta">Play</span>
+        </a>
+      </nav>
+    </main>
+
+    <footer class="build-info">v0.1.1</footer>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
