@@ -84,9 +84,10 @@
       </button>
     </main>
 
-    <footer id="build-info" class="build-info">v0.1.3</footer>
+    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v1.3</footer>
 
-    <dialog id="menu-dialog" class="menu-dialog">
+    <div id="menu-backdrop" class="menu-backdrop" hidden></div>
+    <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
       <div class="dialog-heading">
         <h2>Game</h2>
         <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
@@ -98,8 +99,9 @@
         <button id="restart-game" type="button">Restart this deal</button>
         <button id="undo" type="button">Undo</button>
         <button id="show-rules" type="button">How to play</button>
+        <a id="back-to-picker" class="menu-link" href="../">All games</a>
       </div>
-    </dialog>
+    </aside>
 
     <dialog id="rules-dialog" class="rules-dialog">
       <div class="dialog-heading">

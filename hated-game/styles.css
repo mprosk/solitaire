@@ -425,7 +425,88 @@ body.dragging * {
   color: rgb(255 255 255 / 38%);
   font-size: 0.67rem;
   letter-spacing: 0.04em;
-  pointer-events: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.build-info:focus-visible {
+  color: rgb(255 255 255 / 70%);
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgb(4 24 17 / 55%);
+  backdrop-filter: blur(2px);
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-backdrop[hidden] {
+  display: none;
+}
+
+.menu-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100% - 48px));
+  padding: 22px 18px max(22px, env(safe-area-inset-bottom));
+  color: var(--ink);
+  background: #fffdf8;
+  box-shadow: 8px 0 40px rgb(0 0 0 / 28%);
+  transform: translateX(-105%);
+  visibility: hidden;
+  transition:
+    transform 220ms ease,
+    visibility 220ms ease;
+}
+
+.menu-drawer.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.menu-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.menu-actions button,
+.menu-actions .menu-link,
+.result-actions button,
+.primary-button {
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: none;
+  background: #f1ecdf;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.menu-actions button:hover,
+.menu-actions .menu-link:hover,
+.result-actions button:hover {
+  background: #e9e1d2;
+}
+
+.menu-actions .menu-link {
+  display: grid;
+  place-items: center;
 }
 
 dialog {
@@ -455,29 +536,6 @@ dialog::backdrop {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.65rem;
-}
-
-.menu-actions {
-  display: grid;
-  gap: 9px;
-}
-
-.menu-actions button,
-.result-actions button,
-.primary-button {
-  min-height: 46px;
-  padding: 10px 16px;
-  color: var(--ink);
-  font-weight: 650;
-  background: #f1ecdf;
-  border: 1px solid #ddd5c4;
-  border-radius: 9px;
-  cursor: pointer;
-}
-
-.menu-actions button:hover,
-.result-actions button:hover {
-  background: #e9e1d2;
 }
 
 .primary-button {
@@ -673,5 +731,11 @@ dialog::backdrop {
       opacity: 0;
       transform: translateY(8px) scale(0.98);
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-drawer {
+    transition: none;
   }
 }

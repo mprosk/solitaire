@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v0.1.3";
+  const VERSION = "v1.3";
   const STORAGE_KEY = "hated-game:save-v1";
 
   const elements = {
@@ -20,7 +20,8 @@
     foundations: document.querySelector("#foundations"),
     tableau: document.querySelector("#tableau"),
     status: document.querySelector("#status"),
-    menu: document.querySelector("#menu-dialog"),
+    menu: document.querySelector("#menu-drawer"),
+    menuBackdrop: document.querySelector("#menu-backdrop"),
     rules: document.querySelector("#rules-dialog"),
     wastePreview: document.querySelector("#waste-preview"),
     wasteCards: document.querySelector("#waste-cards"),
@@ -159,7 +160,7 @@
     selection = null;
     transientStatus = DEFAULT_STATUS;
     closeDialog(elements.result);
-    closeDialog(elements.menu);
+    closeMenu();
     render();
   }
 
@@ -168,7 +169,7 @@
     history = [];
     selection = null;
     transientStatus = DEFAULT_STATUS;
-    closeDialog(elements.menu);
+    closeMenu();
     closeDialog(elements.result);
     render();
   }
@@ -188,7 +189,7 @@
     state = previous;
     selection = null;
     transientStatus = DEFAULT_STATUS;
-    closeDialog(elements.menu);
+    closeMenu();
     closeDialog(elements.result);
     render();
   }
@@ -598,10 +599,83 @@
     if (dialog.open) dialog.close();
   }
 
+  function openMenu() {
+    elements.menu.classList.add("is-open");
+    elements.menu.setAttribute("aria-hidden", "false");
+    elements.menuBackdrop.hidden = false;
+  }
+
+  function closeMenu() {
+    elements.menu.classList.remove("is-open");
+    elements.menu.setAttribute("aria-hidden", "true");
+    elements.menuBackdrop.hidden = true;
+  }
+
+  async function copyBuildInfo() {
+    const buildInfo = document.querySelector("#build-info");
+    const text = buildInfo.textContent.trim();
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      const previous = buildInfo.getAttribute("aria-label") || `Version ${VERSION}`;
+      buildInfo.setAttribute("aria-label", `Copied ${text}`);
+      window.setTimeout(() => buildInfo.setAttribute("aria-label", previous), 1500);
+    } catch {
+      // Clipboard may be unavailable offline or without permission.
+    }
+  }
+
+  function wireBuildInfoCopy() {
+    const buildInfo = document.querySelector("#build-info");
+    let longPressTimer = null;
+    let longPressTriggered = false;
+
+    const clearLongPress = () => {
+      if (longPressTimer != null) {
+        window.clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    buildInfo.addEventListener("click", (event) => {
+      if (longPressTriggered) {
+        longPressTriggered = false;
+        event.preventDefault();
+        return;
+      }
+      if (window.matchMedia("(pointer: fine)").matches) {
+        copyBuildInfo();
+      }
+    });
+
+    buildInfo.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        copyBuildInfo();
+      }
+    });
+
+    buildInfo.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse") return;
+      longPressTriggered = false;
+      clearLongPress();
+      longPressTimer = window.setTimeout(() => {
+        longPressTriggered = true;
+        copyBuildInfo();
+      }, 500);
+    });
+
+    buildInfo.addEventListener("pointerup", clearLongPress);
+    buildInfo.addEventListener("pointercancel", clearLongPress);
+    buildInfo.addEventListener("pointerleave", clearLongPress);
+    buildInfo.addEventListener("contextmenu", (event) => event.preventDefault());
+  }
+
   async function renderBuildInfo() {
     const buildInfo = document.querySelector("#build-info");
     buildInfo.textContent = VERSION;
-    buildInfo.setAttribute("aria-label", `Version ${VERSION}`);
+    buildInfo.setAttribute("aria-label", `Version ${VERSION}. Activate to copy.`);
 
     if (!window.location.hostname.endsWith(".github.io")) return;
     const owner = window.location.hostname.split(".")[0];
@@ -616,8 +690,11 @@
       const commits = await response.json();
       const sha = commits[0]?.sha?.slice(0, 7);
       if (!sha) return;
-      buildInfo.textContent = `${VERSION} · ${sha}`;
-      buildInfo.setAttribute("aria-label", `Version ${VERSION}, commit ${sha}`);
+      buildInfo.textContent = `${VERSION}.${sha}`;
+      buildInfo.setAttribute(
+        "aria-label",
+        `Version ${VERSION}.${sha}. Activate to copy.`,
+      );
     } catch {
       // The version remains available when offline or if GitHub is unavailable.
     }
@@ -903,17 +980,24 @@
   document.addEventListener("pointerup", finishDrag);
   document.addEventListener("pointercancel", cancelDrag);
 
-  document.querySelector("#menu-button").addEventListener("click", () => openDialog(elements.menu));
-  document.querySelector("#close-menu").addEventListener("click", () => closeDialog(elements.menu));
+  document.querySelector("#menu-button").addEventListener("click", openMenu);
+  document.querySelector("#close-menu").addEventListener("click", closeMenu);
+  elements.menuBackdrop.addEventListener("click", closeMenu);
   document.querySelector("#new-game").addEventListener("click", requestNewGame);
   document.querySelector("#restart-game").addEventListener("click", requestRestart);
   document.querySelector("#undo").addEventListener("click", undo);
   document.querySelector("#show-rules").addEventListener("click", () => {
-    closeDialog(elements.menu);
+    closeMenu();
     openDialog(elements.rules);
   });
   document.querySelector("#close-rules").addEventListener("click", () => closeDialog(elements.rules));
   document.querySelector("#rules-done").addEventListener("click", () => closeDialog(elements.rules));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && elements.menu.classList.contains("is-open")) {
+      closeMenu();
+    }
+  });
+  wireBuildInfoCopy();
   elements.wastePreview.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeWasteStack();
   });
