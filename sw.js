@@ -1,9 +1,10 @@
-const CACHE_NAME = "solitaire-picker-v0.1.1";
+const CACHE_NAME = "solitaire-picker-v1.0";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=0.1.1",
+  "./styles.css?v=1.0",
+  "./app.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -50,6 +51,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/") ||
     url.pathname.endsWith(".html") ||
     url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".js") ||
     url.pathname.endsWith(".webmanifest");
 
   if (isShell) {

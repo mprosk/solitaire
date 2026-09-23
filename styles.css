@@ -122,9 +122,21 @@ a.game-link .game-meta {
 .build-info {
   position: fixed;
   right: 10px;
-  bottom: 8px;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 50;
   margin: 0;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.38);
   font-family: ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.67rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.build-info:focus-visible {
+  color: rgba(255, 255, 255, 0.7);
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
 }

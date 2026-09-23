@@ -13,7 +13,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=0.1.1" />
+    <link rel="stylesheet" href="styles.css?v=1.0" />
     <style>
       /* Critical layout inlined so a stale SW can't leave bare blue links. */
       .game-list {
@@ -102,8 +102,15 @@
       </nav>
     </main>
 
-    <footer class="build-info">v0.1.1</footer>
+    <footer
+      id="build-info"
+      class="build-info"
+      title="Copy version"
+      role="button"
+      tabindex="0"
+    >v1.0</footer>
 
+    <script src="app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
