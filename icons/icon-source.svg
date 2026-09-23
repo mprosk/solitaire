@@ -1,34 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
+      <rect width="24" height="42" fill="#7a1a28"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#a83242"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#a83242"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#a83242"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#a83242"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#c24a58"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#c24a58"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Felt background -->
   <rect width="512" height="512" fill="#18563d"/>
   <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
 
-  <!-- Fan of three cream cards with path-drawn suits -->
-  <g transform="translate(256 270)">
-    <g transform="rotate(-22) translate(-84 -120)">
-      <rect width="168" height="235" rx="16" fill="#f3e9d5"/>
-      <!-- spade -->
-      <path fill="#19201d" transform="translate(84 118) scale(1.35)"
-            d="M0-28 C-18-8 -28 4 -28 14 C-28 26 -18 34 -8 34 C-4 34 -2 32 0 30
-               C2 32 4 34 8 34 C18 34 28 26 28 14 C28 4 18-8 0-28 Z
-               M0 28 L-6 46 H6 Z"/>
-    </g>
-    <g transform="rotate(22) translate(-84 -120)">
-      <rect width="168" height="235" rx="16" fill="#f3e9d5"/>
-      <!-- heart -->
-      <path fill="#b92f3d" transform="translate(84 118) scale(1.35)"
-            d="M0 30 C-8 18 -32 2 -32 -12 C-32-24 -22-32 -12-32 C-6-32 -2-28 0-24
-               C2-28 6-32 12-32 C22-32 32-24 32-12 C32 2 8 18 0 30 Z"/>
-    </g>
-    <g transform="translate(-84 -120)">
-      <rect width="168" height="235" rx="16" fill="#f3e9d5"/>
-      <!-- club -->
-      <path fill="#19201d" transform="translate(84 118) scale(1.35)"
-            d="M0-6 C-14-6 -24-16 -24-28 C-24-40 -14-48 0-42 C14-48 24-40 24-28
-               C24-16 14-6 0-6 Z
-               M-22 6 C-34 6 -42 16 -42 26 C-42 38 -32 46 -20 46 C-10 46 -2 40 0 32
-               C2 40 10 46 20 46 C32 46 42 38 42 26 C42 16 34 6 22 6
-               C12 6 4 12 0 20 C-4 12 -12 6 -22 6 Z
-               M0 28 L-6 46 H6 Z"/>
-    </g>
+  <!--
+    Four tableau stacks, tops aligned at y=150, each card 100x140,
+    16px column gaps, 24px vertical overlap step.
+    Stack 1: 1 up. Stack 2: 1 down + 1 up. Stack 3: 2 down + 1 up.
+    Stack 4: 3 down + 1 up. Face cards carry a single large suit mark.
+  -->
+
+  <!-- Stack 1: single face-up card (spade) -->
+  <g transform="translate(32 150)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <path fill="#19201d" transform="translate(50 68) scale(0.9)"
+          d="M0-28 C-18-8 -28 4 -28 14 C-28 26 -18 34 -8 34 C-4 34 -2 32 0 30
+             C2 32 4 34 8 34 C18 34 28 26 28 14 C28 4 18-8 0-28 Z
+             M0 28 L-6 46 H6 Z"/>
+  </g>
+
+  <!-- Stack 2: 1 down + heart up -->
+  <g transform="translate(148 150)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(148 174)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <path fill="#b92f3d" transform="translate(50 70) scale(0.9)"
+          d="M0 30 C-8 18 -32 2 -32 -12 C-32-24 -22-32 -12-32 C-6-32 -2-28 0-24
+             C2-28 6-32 12-32 C22-32 32-24 32-12 C32 2 8 18 0 30 Z"/>
+  </g>
+
+  <!-- Stack 3: 2 down + club up -->
+  <g transform="translate(264 150)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(264 174)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(264 198)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <path fill="#19201d" transform="translate(50 68) scale(0.9)"
+          d="M-21-20 A21 21 0 1 0 21-20 A21 21 0 1 0 -21-20 Z
+             M-39 8 A21 21 0 1 0 3 8 A21 21 0 1 0 -39 8 Z
+             M-3 8 A21 21 0 1 0 39 8 A21 21 0 1 0 -3 8 Z
+             M0 10 L-9 40 H9 Z"/>
+  </g>
+
+  <!-- Stack 4: 3 down + diamond up -->
+  <g transform="translate(380 150)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(380 174)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(380 198)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <rect x="6" y="6" width="88" height="128" rx="6" ry="6"
+          fill="url(#cardBack)" stroke="#7a1a28" stroke-width="2"/>
+  </g>
+  <g transform="translate(380 222)" filter="url(#shadow)">
+    <rect width="100" height="140" rx="9" ry="9" fill="#f3e9d5"/>
+    <path fill="#b92f3d" transform="translate(50 70) scale(0.9)"
+          d="M0-30 L24 0 L0 30 L-24 0 Z"/>
   </g>
 </svg>
