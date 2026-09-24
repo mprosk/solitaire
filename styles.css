@@ -64,6 +64,13 @@ main {
   gap: 12px;
 }
 
+.game-divider {
+  width: 40%;
+  margin: 6px auto;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+}
+
 a.game-link {
   display: flex;
   align-items: center;
