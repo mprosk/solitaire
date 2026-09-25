@@ -124,8 +124,10 @@
           colors. Aces and kings wrap: 2–A–K.
         </p>
         <p>
-          Move only a whole vertical stack. Its top card must fit beneath the bottom card
-          of its destination. Play bottom cards into the up piles.
+          Move a whole vertical stack when its top card fits beneath the bottom card of
+          its destination. You may also move only the bottom card of a stack onto another
+          stack in the same alternating-color, one-rank-lower order. Empty stacks cannot
+          be filled this way—only from the deck. Play bottom cards into the up piles.
         </p>
         <p>
           Up piles build upward by suit, one rank at a time, and wrap from king to ace.
@@ -167,8 +169,47 @@
 
     <script src="game.js"></script>
     <script>
+      // Service worker: keep it for installs/offline, but let devs opt out.
+      // Visit ?sw=off once to unregister + skip registration on this browser
+      // (remembered in localStorage); ?sw=on re-enables. Without this, the
+      // cache-first worker keeps serving stale CSS/JS no matter how hard you
+      // reload, which makes visual iteration miserable.
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
+          const params = new URLSearchParams(window.location.search);
+          let swOff = null;
+          try {
+            swOff = window.localStorage.getItem("hated-game:sw-off");
+            if (params.get("sw") === "off") {
+              swOff = "1";
+              window.localStorage.setItem("hated-game:sw-off", "1");
+            } else if (params.get("sw") === "on") {
+              swOff = null;
+              window.localStorage.removeItem("hated-game:sw-off");
+            }
+          } catch {
+            if (params.get("sw") === "off") swOff = "1";
+            else if (params.get("sw") === "on") swOff = null;
+          }
+          if (swOff === "1") {
+            navigator.serviceWorker
+              .getRegistrations()
+              .then((registrations) =>
+                Promise.all(registrations.map((r) => r.unregister())),
+              )
+              .then(() => window.caches?.keys())
+              .then((keys) =>
+                keys
+                  ? Promise.all(
+                      keys
+                        .filter((key) => key.startsWith("hated-game-"))
+                        .map((key) => window.caches.delete(key)),
+                    )
+                  : null,
+              )
+              .catch(() => {});
+            return;
+          }
           navigator.serviceWorker.register("./sw.js").catch(() => {});
         });
       }

@@ -181,6 +181,42 @@
     render();
   }
 
+  function buildStackedTestPile() {
+    // Dev-only (?stacked=1): guarantee a 3-card legal tableau stack on pile 3
+    // so drag layering can be tested without re-dealing for a lucky hand.
+    // Only stock/waste/tableau cards are rearranged; reserve and foundations
+    // are untouched so game invariants hold. Total card count is preserved.
+    const pool = [...state.stock, ...state.waste, ...state.tableau.flat()];
+    let triple = null;
+    for (let a = 0; a < pool.length && !triple; a += 1) {
+      for (let b = 0; b < pool.length && !triple; b += 1) {
+        if (b === a || !canJoinTableau(pool[b], pool[a])) continue;
+        for (let c = 0; c < pool.length && !triple; c += 1) {
+          if (c === a || c === b || !canJoinTableau(pool[c], pool[b])) continue;
+          triple = [pool[a], pool[b], pool[c]];
+        }
+      }
+    }
+    if (!triple) return false;
+    const ids = new Set(triple.map((card) => card.id));
+    state.stock = state.stock.filter((card) => !ids.has(card.id));
+    state.waste = state.waste.filter((card) => !ids.has(card.id));
+    const displaced = [];
+    state.tableau = state.tableau.map((pile, index) => {
+      if (index === 2) {
+        displaced.push(...pile.filter((card) => !ids.has(card.id)));
+        return triple;
+      }
+      const kept = pile.filter((card) => !ids.has(card.id));
+      displaced.push(...pile.filter((card) => ids.has(card.id)));
+      return kept;
+    });
+    state.stock.push(...displaced);
+    transientStatus = "Test stack on pile 3 — drag its bottom card.";
+    render();
+    return true;
+  }
+
   function saveHistory() {
     history.push(clone(state));
     if (history.length > 100) history.shift();
@@ -445,7 +481,7 @@
     return null;
   }
 
-  function tryMoveToTableau(destinationIndex) {
+  function tryMoveToTableau(destinationIndex, options = {}) {
     if (!selection) return false;
     if (selection.type === "reserve") {
       setStatus("The sideways pile can only play into an up pile.");
@@ -459,6 +495,34 @@
     }
 
     const destination = state.tableau[destinationIndex];
+
+    if (selection.type === "tableau") {
+      const sourcePile = state.tableau[selection.index];
+      if (!sourcePile.length) return false;
+
+      const moveSingleCard = Boolean(options.singleCard);
+      const card = moveSingleCard ? sourcePile[sourcePile.length - 1] : sourcePile[0];
+
+      if (destination.length === 0) {
+        setStatus("Only the top revealed deck card can fill an empty stack.");
+        return true;
+      }
+      if (!canJoinTableau(card, destination[destination.length - 1])) {
+        setStatus("Those cards do not join in immediate descending, alternating-color order.");
+        return true;
+      }
+
+      saveHistory();
+      if (moveSingleCard) {
+        destination.push(sourcePile.pop());
+      } else {
+        destination.push(...sourcePile);
+        state.tableau[selection.index] = [];
+      }
+      finishMove();
+      return true;
+    }
+
     const card = sourceCardForTableau(selection);
     if (!card) return false;
 
@@ -473,13 +537,7 @@
     }
 
     saveHistory();
-    if (selection.type === "tableau") {
-      const movingPile = state.tableau[selection.index];
-      state.tableau[destinationIndex].push(...movingPile);
-      state.tableau[selection.index] = [];
-    } else {
-      state.tableau[destinationIndex].push(removeSingleSourceCard(selection));
-    }
+    state.tableau[destinationIndex].push(removeSingleSourceCard(selection));
     finishMove();
     return true;
   }
@@ -577,11 +635,14 @@
         destinationIndex < state.tableau.length;
         destinationIndex += 1
       ) {
+        if (sourceIndex === destinationIndex) continue;
         const destination = state.tableau[destinationIndex];
+        if (!destination.length) continue;
+        const exposed = destination[destination.length - 1];
+        // Whole stack, or the single bottom card alone.
         if (
-          sourceIndex !== destinationIndex &&
-          destination.length &&
-          canJoinTableau(source[0], destination[destination.length - 1])
+          canJoinTableau(source[0], exposed) ||
+          canJoinTableau(source[source.length - 1], exposed)
         ) {
           return true;
         }
@@ -830,6 +891,37 @@
     );
   }
 
+  // Tableau cards receive pointer events; map a point to the card whose
+  // visible overlap band it lands in. Returns null outside the cards.
+  function tableauCardAtPoint(pileButton, clientX, clientY) {
+    const cards = [...pileButton.querySelectorAll(":scope > .playing-card")];
+    if (!cards.length) return null;
+
+    const pileRect = pileButton.getBoundingClientRect();
+    const y = clientY - pileRect.top;
+    const x = clientX - pileRect.left;
+    if (x < -4 || x > pileRect.width + 4) return null;
+    if (y < 0) return null;
+    const lastCard = cards[cards.length - 1];
+    const cardsBottom = lastCard.offsetTop + lastCard.offsetHeight;
+    if (y > cardsBottom) return null;
+
+    const overlap =
+      cards.length > 1
+        ? Math.max(lastCard.offsetTop - cards[cards.length - 2].offsetTop, 1)
+        : cards[0].offsetHeight;
+
+    let index = Math.floor(y / overlap);
+    if (index < 0) index = 0;
+    if (index >= cards.length) index = cards.length - 1;
+
+    return {
+      element: cards[index],
+      index,
+      isBottom: index === cards.length - 1,
+    };
+  }
+
   function positionDragGhost(event) {
     if (!dragSession?.ghost) return;
     dragSession.ghost.style.left = `${event.clientX - dragSession.ghost.offsetWidth / 2}px`;
@@ -841,9 +933,23 @@
     const source = sourceFromElement(event.target);
     const origin = dragOriginElement(event.target);
     if (!source || !origin) return;
-    const grabbedCard = event.target.closest(".playing-card");
-    const grabbedBottomCard =
-      source.type === "tableau" && grabbedCard === origin.lastElementChild;
+
+    let grabbedCard = event.target.closest(".playing-card");
+    let grabbedBottomCard = false;
+    let tableauCount = 0;
+    if (source.type === "tableau") {
+      const cards = [...origin.querySelectorAll(":scope > .playing-card")];
+      tableauCount = cards.length;
+      if (grabbedCard && cards.includes(grabbedCard)) {
+        grabbedBottomCard = grabbedCard === cards[cards.length - 1];
+      } else {
+        const hit = tableauCardAtPoint(origin, event.clientX, event.clientY);
+        if (hit) {
+          grabbedCard = hit.element;
+          grabbedBottomCard = hit.isBottom;
+        }
+      }
+    }
 
     dragSession = {
       pointerId: event.pointerId,
@@ -853,6 +959,7 @@
       origin,
       grabbedCard,
       grabbedBottomCard,
+      tableauCount,
       ghost: null,
     };
     origin.setPointerCapture(event.pointerId);
@@ -869,18 +976,33 @@
 
     event.preventDefault();
     if (!dragSession.ghost) {
+      // Fake (opaque) wash only when peeling the exposed card off a
+      // multi-card stack. A lone card or a whole stack uses real
+      // translucency on the origin pile — nothing sits above to ghost through.
+      const singleFromMulti =
+        Boolean(dragSession.grabbedBottomCard && dragSession.grabbedCard) &&
+        dragSession.tableauCount > 1;
       const ghost = (
-        dragSession.grabbedBottomCard ? dragSession.grabbedCard : dragSession.origin
+        singleFromMulti ? dragSession.grabbedCard : dragSession.origin
       ).cloneNode(true);
       ghost.removeAttribute("id");
       ghost
         .querySelectorAll(".pile-count, .reserve-under-card")
         .forEach((decoration) => decoration.remove());
-      ghost.classList.remove("selected");
+      ghost.classList.remove("selected", "drag-origin");
       ghost.classList.add("drag-ghost");
       ghost.style.width = `${dragSession.origin.offsetWidth}px`;
+      ghost.style.top = "";
+      ghost.style.left = "";
       document.body.append(ghost);
-      dragSession.origin.classList.add("drag-origin");
+      if (
+        Boolean(dragSession.grabbedBottomCard && dragSession.grabbedCard) &&
+        dragSession.tableauCount > 1
+      ) {
+        dragSession.grabbedCard.classList.add("drag-origin");
+      } else {
+        dragSession.origin.classList.add("drag-origin");
+      }
       document.body.classList.add("dragging");
       dragSession.ghost = ghost;
     }
@@ -890,6 +1012,7 @@
   function cleanUpDrag() {
     if (!dragSession) return;
     dragSession.ghost?.remove();
+    dragSession.grabbedCard?.classList.remove("drag-origin");
     dragSession.origin.classList.remove("drag-origin");
     document.body.classList.remove("dragging");
     dragSession = null;
@@ -906,6 +1029,7 @@
     }
 
     const source = dragSession.source;
+    const moveSingleCard = Boolean(dragSession.grabbedBottomCard);
     const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
     const tableau = dropTarget?.closest("[data-tableau]");
     const foundationZone = dropTarget?.closest(".foundation-zone");
@@ -914,7 +1038,7 @@
     selection = source;
 
     if (tableau) {
-      tryMoveToTableau(Number(tableau.dataset.tableau));
+      tryMoveToTableau(Number(tableau.dataset.tableau), { singleCard: moveSingleCard });
     } else if (foundationZone) {
       const card = sourceCardForFoundation(source);
       if (card) {
@@ -1060,5 +1184,11 @@
     event.returnValue = "";
   });
   renderBuildInfo();
-  if (!restoreSavedGame()) startNewGame();
+  const queryParams = new URLSearchParams(window.location.search);
+  if (queryParams.has("stacked")) {
+    // Deterministic visual-test deal; bypasses the session restore so every
+    // reload lands on the same testable board.
+    startNewGame();
+    buildStackedTestPile();
+  } else if (!restoreSavedGame()) startNewGame();
 })();

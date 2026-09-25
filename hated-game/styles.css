@@ -203,10 +203,39 @@ main {
 }
 
 .card-slot {
-  background: rgb(0 0 0 / 9%);
-  border: 2px solid rgb(255 255 255 / 20%);
+  /* No border on the slot itself — a bordered box shrinks the content area and
+     top-left-pins the card, so a shorter ghost shares the top edge and leaves a
+     gap at the bottom. Helper chrome lives on an explicitly centered ::before. */
+  border: 0;
+  background: transparent;
   cursor: pointer;
   touch-action: none;
+}
+
+.card-slot::before {
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--card-width) - 6px);
+  height: calc(var(--card-height) - 6px);
+  content: "";
+  background: rgb(0 0 0 / 9%);
+  border: 2px solid rgb(255 255 255 / 20%);
+  border-radius: clamp(4px, 1.1vw, 8px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.card-slot:has(> .playing-card)::before,
+.card-slot.card-back::before {
+  content: none;
+}
+
+.card-slot > .playing-card {
+  /* Full-size card, same box as the slot — shares the ghost's centerline. */
+  position: relative;
+  z-index: 1;
 }
 
 .card-slot.empty-foundation::after {
@@ -224,8 +253,10 @@ main {
 
 .foundation-start-rank {
   position: absolute;
-  top: 7%;
-  left: 10%;
+  /* Ghost outline is inset ~3px; keep a little left padding from that frame,
+     but sit high enough that tall ranks (Q) clear the suit watermark. */
+  top: calc(7% + 2px);
+  left: calc(10% + 5px);
   color: rgb(255 255 255 / 18%);
   font-family: Georgia, "Times New Roman", serif;
   font-size: var(--corner-font-size);
@@ -356,20 +387,25 @@ main {
 }
 
 .tableau-pile::before {
+  /* Pseudos are content-box by default (* does not match them), so without
+     border-box a 2px border grew 4px past the card. Inset further so the
+     dashed helper never peeks from under an occupied stack. */
+  box-sizing: border-box;
   position: absolute;
-  inset: 0 auto auto 0;
-  width: var(--card-width);
-  height: var(--card-height);
+  top: 2px;
+  left: 2px;
+  width: calc(var(--card-width) - 4px);
+  height: calc(var(--card-height) - 4px);
   content: "";
   background: rgb(0 0 0 / 9%);
   border: 2px dashed rgb(255 255 255 / 18%);
-  border-radius: clamp(5px, 1.2vw, 9px);
+  border-radius: clamp(4px, 1.1vw, 8px);
 }
 
 .tableau-pile .playing-card {
   position: absolute;
   left: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .tableau-pile.selected {
@@ -430,12 +466,46 @@ main {
   opacity: 0.48;
 }
 
+/* Single card peeled off a multi-card stack ("top of stack", pile[last]): the
+   card itself stays 100% normal and opaque, with a flat felt-colored veil on
+   top. The math works out identical to real 0.48 transparency
+   (0.48 x card + 0.52 x felt) — but since the card is opaque, cards above it
+   can't ghost through, only the veil's flat felt tint shows. Lone cards and
+   whole stacks keep the real transparency via generic .drag-origin (JS only
+   puts this class on the card when the pile holds more than one card). */
+.tableau-pile > .playing-card.drag-origin {
+  opacity: 1 !important;
+  box-shadow: none;
+  /* Pre-tinted sage border all around (same blend as the veiled face, so no
+     seam): opaque, so the white cards stacked behind can't peek through as
+     slivers in the overlap bands. No geometry changes — the card never moves,
+     so nothing wiggles when the drag starts or ends. */
+  border-color: #93b0a1;
+  border-color: color-mix(in srgb, #ffffff 48%, var(--felt));
+}
+
+.tableau-pile > .playing-card.drag-origin::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: rgb(24 86 61 / 0.52);
+  background: color-mix(in srgb, transparent 48%, var(--felt));
+  pointer-events: none;
+}
+
+.drag-ghost,
+.drag-ghost * {
+  /* Parent none is not enough: .tableau-pile .playing-card sets auto, so
+     elementFromPoint would hit the ghost stack and treat the drop as same-pile. */
+  pointer-events: none !important;
+}
+
 .drag-ghost {
   position: fixed !important;
-  z-index: 1000 !important;
+  z-index: 10000 !important;
   margin: 0 !important;
-  opacity: 0.92;
-  pointer-events: none !important;
+  opacity: 1 !important;
   transform: none !important;
   filter: drop-shadow(0 12px 12px rgb(0 0 0 / 30%));
 }
@@ -759,8 +829,8 @@ dialog::backdrop {
   }
 
   .foundation-start-rank {
-    top: 6%;
-    left: 8%;
+    top: calc(6% + 2px);
+    left: calc(8% + 4px);
     font-size: min(calc(var(--card-width) * 0.42), 2rem);
   }
 

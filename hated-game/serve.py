@@ -24,6 +24,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def end_headers(self):
+        # Dev ergonomics: never let the browser HTTP-cache game assets, so a
+        # plain reload always picks up fresh CSS/JS (the service worker cache
+        # is a separate layer — see ?sw=off in index.html).
+        if self.path.split("?")[0].lower().endswith(
+            (".html", ".css", ".js", ".webmanifest")
+        ):
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def guess_type(self, path):
         # Prefer our forced mappings over whatever guess_type returns.
         lower = path.lower()
