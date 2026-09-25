@@ -1018,6 +1018,118 @@
     dragSession = null;
   }
 
+  function pointDistance(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  function rectCenter(rect) {
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+
+  // Exposed card for a tableau pile, or the empty-slot card area at the top.
+  function tableauDropAnchor(pileButton) {
+    const cards = pileButton.querySelectorAll(":scope > .playing-card");
+    if (cards.length) {
+      return cards[cards.length - 1].getBoundingClientRect();
+    }
+    const rect = pileButton.getBoundingClientRect();
+    const height = Math.min(rect.height, elements.stock.getBoundingClientRect().height || rect.width * 1.4);
+    return {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height,
+      right: rect.left + rect.width,
+      bottom: rect.top + height,
+    };
+  }
+
+  function cardMovingToTableau(source, options = {}) {
+    if (source.type === "reserve") return null;
+    if (source.type === "tableau") {
+      const pile = state.tableau[source.index];
+      if (!pile.length) return null;
+      return options.singleCard ? pile[pile.length - 1] : pile[0];
+    }
+    return sourceCardForTableau(source);
+  }
+
+  function canDropOnTableau(source, destinationIndex, options = {}) {
+    if (source.type === "reserve") return false;
+    if (source.type === "tableau" && source.index === destinationIndex) return false;
+    const card = cardMovingToTableau(source, options);
+    if (!card) return false;
+    const destination = state.tableau[destinationIndex];
+    if (destination.length === 0) return source.type === "waste";
+    return canJoinTableau(card, destination[destination.length - 1]);
+  }
+
+  function canDropOnFoundation(source, destinationIndex) {
+    if (!["tableau", "waste", "reserve"].includes(source.type)) return false;
+    const card = sourceCardForFoundation(source);
+    return Boolean(card && canJoinFoundation(card, destinationIndex));
+  }
+
+  // Targets whose horizontal center lies on the dragged side of the origin
+  // column's center — never the opposite side, even if nearer.
+  function isOnDragSide(targetRect, originRect, side) {
+    const targetMidX = targetRect.left + targetRect.width / 2;
+    const originMidX = originRect.left + originRect.width / 2;
+    return side === "right" ? targetMidX > originMidX : targetMidX < originMidX;
+  }
+
+  function tableauTopEdge() {
+    let top = Infinity;
+    elements.tableau.querySelectorAll("[data-tableau]").forEach((pileButton) => {
+      top = Math.min(top, pileButton.getBoundingClientRect().top);
+    });
+    return top;
+  }
+
+  // Midpoint above the tableau top ⇒ more than half the card is above that edge.
+  function isAimingAtFoundations(midpoint) {
+    const top = tableauTopEdge();
+    return Number.isFinite(top) && midpoint.y < top;
+  }
+
+  function findNearestLegalFoundation(source, midpoint) {
+    let best = null;
+    elements.foundations.querySelectorAll("[data-foundation]").forEach((slot) => {
+      const index = Number(slot.dataset.foundation);
+      if (!canDropOnFoundation(source, index)) return;
+      const dist = pointDistance(midpoint, rectCenter(slot.getBoundingClientRect()));
+      if (!best || dist < best.dist) {
+        best = { type: "foundation", index, dist };
+      }
+    });
+    return best;
+  }
+
+  function findNearestLegalTableau(source, midpoint, originRect, side, options = {}) {
+    let best = null;
+    elements.tableau.querySelectorAll("[data-tableau]").forEach((pileButton) => {
+      const index = Number(pileButton.dataset.tableau);
+      if (!canDropOnTableau(source, index, options)) return;
+      const anchor = tableauDropAnchor(pileButton);
+      // Side filter is for tableau-to-tableau only; waste/foundation ignore it.
+      if (side && !isOnDragSide(anchor, originRect, side)) return;
+      const dist = pointDistance(midpoint, rectCenter(anchor));
+      if (!best || dist < best.dist) {
+        best = { type: "tableau", index, dist };
+      }
+    });
+    return best;
+  }
+
+  function hasLeftOriginSlot(midpoint, originRect) {
+    return (
+      midpoint.x < originRect.left ||
+      midpoint.x > originRect.right ||
+      midpoint.y < originRect.top ||
+      midpoint.y > originRect.bottom
+    );
+  }
+
   function finishDrag(event) {
     if (!dragSession || dragSession.pointerId !== event.pointerId) return;
     cancelWasteLongPress();
@@ -1030,27 +1142,66 @@
 
     const source = dragSession.source;
     const moveSingleCard = Boolean(dragSession.grabbedBottomCard);
-    const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-    const tableau = dropTarget?.closest("[data-tableau]");
-    const foundationZone = dropTarget?.closest(".foundation-zone");
+    const originRect = dragSession.origin.getBoundingClientRect();
+    const ghostRect = dragSession.ghost.getBoundingClientRect();
+    const midpoint = {
+      x: ghostRect.left + ghostRect.width / 2,
+      y: ghostRect.top + ghostRect.height / 2,
+    };
     suppressCardClickUntil = Date.now() + 250;
     cleanUpDrag();
-    selection = source;
 
-    if (tableau) {
-      tryMoveToTableau(Number(tableau.dataset.tableau), { singleCard: moveSingleCard });
-    } else if (foundationZone) {
-      const card = sourceCardForFoundation(source);
-      if (card) {
-        tryMoveToFoundation(card.suit);
+    selection = source;
+    let target = null;
+
+    // Above the tableau: foundations ignore the side rule and beat tableau plays.
+    if (isAimingAtFoundations(midpoint)) {
+      target = findNearestLegalFoundation(source, midpoint);
+    }
+
+    if (!target) {
+      const fromTableau = source.type === "tableau";
+      if (fromTableau) {
+        // Tableau: midpoint must clear the origin column left or right; only
+        // consider targets on that side so opposite-side plays never auto-snap.
+        const side =
+          midpoint.x < originRect.left ? "left" : midpoint.x > originRect.right ? "right" : null;
+        if (!side) {
+          selection = null;
+          transientStatus = DEFAULT_STATUS;
+          elements.status.textContent = DEFAULT_STATUS;
+          render();
+          return;
+        }
+        target = findNearestLegalTableau(source, midpoint, originRect, side, {
+          singleCard: moveSingleCard,
+        });
       } else {
-        selection = null;
-        setStatus("That card cannot move to an up pile.");
+        // Waste / foundation / reserve: leaving the slot in any direction
+        // (including down onto the tableau) is enough; nearest legal wins.
+        if (!hasLeftOriginSlot(midpoint, originRect)) {
+          selection = null;
+          transientStatus = DEFAULT_STATUS;
+          elements.status.textContent = DEFAULT_STATUS;
+          render();
+          return;
+        }
+        target = findNearestLegalTableau(source, midpoint, originRect, null, {
+          singleCard: moveSingleCard,
+        });
       }
-    } else {
+    }
+
+    if (!target) {
       selection = null;
       setStatus("That card or stack cannot be placed there.");
       return;
+    }
+
+    if (target.type === "tableau") {
+      tryMoveToTableau(target.index, { singleCard: moveSingleCard });
+    } else {
+      tryMoveToFoundation(target.index);
     }
 
     if (selection) {
