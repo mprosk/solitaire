@@ -22,6 +22,7 @@
     status: document.querySelector("#status"),
     menu: document.querySelector("#menu-drawer"),
     menuBackdrop: document.querySelector("#menu-backdrop"),
+    menuButton: document.querySelector("#menu-button"),
     rules: document.querySelector("#rules-dialog"),
     wastePreview: document.querySelector("#waste-preview"),
     wasteCards: document.querySelector("#waste-cards"),
@@ -640,12 +641,14 @@
     elements.menu.classList.add("is-open");
     elements.menu.setAttribute("aria-hidden", "false");
     elements.menuBackdrop.hidden = false;
+    elements.menuButton.setAttribute("aria-expanded", "true");
   }
 
   function closeMenu() {
     elements.menu.classList.remove("is-open");
     elements.menu.setAttribute("aria-hidden", "true");
     elements.menuBackdrop.hidden = true;
+    elements.menuButton.setAttribute("aria-expanded", "false");
   }
 
   async function copyBuildInfo() {
@@ -1017,7 +1020,7 @@
   document.addEventListener("pointerup", finishDrag);
   document.addEventListener("pointercancel", cancelDrag);
 
-  document.querySelector("#menu-button").addEventListener("click", openMenu);
+  elements.menuButton.addEventListener("click", openMenu);
   document.querySelector("#close-menu").addEventListener("click", closeMenu);
   elements.menuBackdrop.addEventListener("click", closeMenu);
   document.querySelector("#new-game").addEventListener("click", requestNewGame);

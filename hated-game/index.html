@@ -20,7 +20,14 @@
   </head>
   <body>
     <header class="topbar">
-      <button id="menu-button" class="icon-button" aria-label="Open menu" type="button">
+      <button
+        id="menu-button"
+        class="icon-button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu-drawer"
+        type="button"
+      >
         <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
       <h1>The Hated Game</h1>
@@ -88,17 +95,18 @@
 
     <div id="menu-backdrop" class="menu-backdrop" hidden></div>
     <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
+      <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
+        ×
+      </button>
       <div class="dialog-heading">
         <h2>Game</h2>
-        <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
-          ×
-        </button>
       </div>
       <div class="menu-actions">
         <button id="new-game" type="button">New game</button>
         <button id="restart-game" type="button">Restart this deal</button>
         <button id="undo" type="button">Undo</button>
         <button id="show-rules" type="button">How to play</button>
+        <div class="menu-divider" aria-hidden="true"></div>
         <a id="back-to-picker" class="menu-link" href="../">All games</a>
       </div>
     </aside>
