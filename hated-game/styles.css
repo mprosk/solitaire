@@ -364,11 +364,32 @@ main {
   top: 0;
   left: 50%;
   z-index: 20;
+  overflow: visible;
   transform: translateX(-50%);
 }
 
 .reserve {
+  overflow: visible;
   transform: rotate(90deg) scale(0.84);
+}
+
+.reserve .playing-card {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--card-width);
+  height: var(--card-height);
+}
+
+.reserve .reserve-under-card {
+  pointer-events: none;
+}
+
+/* Loss reveal: custom downward fan for the rotated sideways stack. */
+.reserve.reserve--revealed .playing-card {
+  top: 0;
+  left: 0;
+  /* translateX is local; after the 90° parent rotate it reads as downward. */
+  transform: translateX(var(--reserve-fan-offset, 0px));
 }
 
 .reserve .pile-count {
@@ -408,10 +429,18 @@ body.dragging * {
   text-align: center;
 }
 
-.board-new-game {
+.board-new-game.primary-button {
   display: block;
   min-width: 150px;
   margin: 18px auto 0;
+  color: #fff !important;
+  background: #315b98 !important;
+  border: 1px solid #173e78 !important;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 32%);
+}
+
+.board-new-game.primary-button:hover {
+  background: #173e78 !important;
 }
 
 .board-new-game[hidden] {

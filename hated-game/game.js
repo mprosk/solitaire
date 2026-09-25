@@ -110,7 +110,13 @@
   }
 
   function hasProgress() {
-    return Boolean(state && history.length > 0 && score() < 52);
+    return Boolean(
+      state &&
+        !state.gameOver &&
+        !state.winDeclared &&
+        history.length > 0 &&
+        score() < 52,
+    );
   }
 
   function requestNewGame() {
@@ -329,16 +335,47 @@
   }
 
   function renderReserve() {
-    const card = state.reserve[state.reserve.length - 1];
-    setButtonCard(elements.reserve, card, {
-      selected: selection?.type === "reserve",
-      count: state.reserve.length,
-    });
-    elements.reserve.classList.add("reserve");
-    if (card) {
+    const cards = state.reserve;
+    const topCard = cards[cards.length - 1];
+    const revealHidden = state.gameOver === "loss" && cards.length > 1;
+
+    if (revealHidden) {
+      elements.reserve.className = "card-slot reserve reserve--revealed";
+      elements.reserve.innerHTML = "";
+      elements.reserve.disabled = true;
+
+      // Sideways cards are rotated 90°; fan along local X so they spread downward
+      // on screen. ~10% overlap ⇒ step 90% of card width (the visual short side).
+      const cardWidth = elements.stock.getBoundingClientRect().width || 60;
+      const fanStep = cardWidth * 0.9;
+
+      cards.forEach((card, index) => {
+        const isTop = index === cards.length - 1;
+        elements.reserve.insertAdjacentHTML(
+          "beforeend",
+          cardMarkup(card, isTop ? "" : "reserve-under-card"),
+        );
+        const cardElement = elements.reserve.lastElementChild;
+        // Index 0 (buried) stays put; exposed top card steps downward.
+        cardElement.style.setProperty("--reserve-fan-offset", `${index * fanStep}px`);
+        cardElement.style.zIndex = String(index + 1);
+      });
       elements.reserve.setAttribute(
         "aria-label",
-        `${card.label}, ${state.reserve.length} cards in sideways pile`,
+        `Sideways pile revealed: ${cards.map((card) => card.label).join(", ")}`,
+      );
+      return;
+    }
+
+    setButtonCard(elements.reserve, topCard, {
+      selected: selection?.type === "reserve",
+      count: cards.length,
+    });
+    elements.reserve.classList.add("reserve");
+    if (topCard) {
+      elements.reserve.setAttribute(
+        "aria-label",
+        `${topCard.label}, ${cards.length} cards in sideways pile`,
       );
     } else {
       elements.reserve.setAttribute("aria-label", "Empty sideways pile");
@@ -348,7 +385,7 @@
   function render() {
     const currentScore = score();
     elements.score.textContent = String(currentScore);
-    elements.boardNewGame.hidden = currentScore !== 52;
+    elements.boardNewGame.hidden = !(state.gameOver || state.winDeclared);
     elements.status.textContent = state.gameOver
       ? state.gameOver === "win"
         ? "You won the deal."
