@@ -26,7 +26,7 @@
         border: 0;
         border-top: 1px solid rgba(255, 255, 255, 0.28);
       }
-      a.game-link {
+      .game-link {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -39,13 +39,18 @@
         border-radius: 14px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
       }
-      a.game-link .game-main {
+      .game-link.is-disabled {
+        opacity: 0.62;
+        box-shadow: none;
+        cursor: default;
+      }
+      .game-link .game-main {
         display: flex;
         align-items: center;
         gap: 0.85rem;
         min-width: 0;
       }
-      a.game-link .game-icon {
+      .game-link .game-icon {
         width: 48px;
         height: 48px;
         flex-shrink: 0;
@@ -53,11 +58,11 @@
         object-fit: cover;
         background: #18563d;
       }
-      a.game-link .game-name {
+      .game-link .game-name {
         font-size: 1.15rem;
         font-weight: 600;
       }
-      a.game-link .game-meta {
+      .game-link .game-meta {
         color: #103d2c;
         font-family: ui-sans-serif, system-ui, sans-serif;
         font-size: 0.85rem;
@@ -99,12 +104,21 @@
           </span>
           <span class="game-meta">Play</span>
         </a>
-        <a class="game-link" href="./larrys-game/">
+        <div class="game-link is-disabled" aria-disabled="true">
           <span class="game-main">
-            <span class="game-name">Larry’s Game</span>
+            <span class="game-name">Larry’s Game — <em>Coming Soon!</em></span>
           </span>
-          <span class="game-meta">Play</span>
-        </a>
+        </div>
+        <div class="game-link is-disabled" aria-disabled="true">
+          <span class="game-main">
+            <span class="game-name">Cross — <em>Coming Soon!</em></span>
+          </span>
+        </div>
+        <div class="game-link is-disabled" aria-disabled="true">
+          <span class="game-main">
+            <span class="game-name">Picture Frame — <em>Coming Soon!</em></span>
+          </span>
+        </div>
         <hr class="game-divider" />
         <a class="game-link" href="https://mprosk.github.io/hazels-game/">
           <span class="game-main">

@@ -71,7 +71,7 @@ main {
   border-top: 1px solid rgba(255, 255, 255, 0.28);
 }
 
-a.game-link {
+.game-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,20 +86,11 @@ a.game-link {
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
-a.game-link .game-main {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-}
-
-a.game-link .game-icon {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  object-fit: cover;
-  background: var(--felt);
+.game-link.is-disabled {
+  opacity: 0.62;
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
 }
 
 a.game-link:active {
@@ -112,12 +103,28 @@ a.game-link:focus-visible {
   outline-offset: 3px;
 }
 
-a.game-link .game-name {
+.game-link .game-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.game-link .game-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--felt);
+}
+
+.game-link .game-name {
   font-size: 1.15rem;
   font-weight: 600;
 }
 
-a.game-link .game-meta {
+.game-link .game-meta {
   color: var(--felt-dark);
   font-family: ui-sans-serif, system-ui, sans-serif;
   font-size: 0.85rem;
