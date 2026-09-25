@@ -377,6 +377,7 @@ main[data-deck-position="upper-right"] .foundation-zone {
   position: absolute;
   left: 4px;
   bottom: 4px;
+  z-index: 2;
   min-width: 22px;
   padding: 2px 5px;
   color: white;
@@ -500,7 +501,11 @@ main[data-deck-position="upper-right"] .foundation-zone {
 
 .reserve .pile-count {
   /* Local bottom-left → visual upper-left after the 90° reserve rotation. */
-  inset: auto auto 9px 6px;
+  top: auto;
+  right: auto;
+  bottom: 9px;
+  left: 6px;
+  z-index: 2;
   transform: rotate(-90deg);
 }
 
