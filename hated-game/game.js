@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.4";
+  const VERSION = "v1.5";
   const STORAGE_KEY = "hated-game:save-v1";
 
   const elements = {
