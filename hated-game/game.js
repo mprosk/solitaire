@@ -9,10 +9,14 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.5";
+  const VERSION = "v1.6";
   const STORAGE_KEY = "hated-game:save-v1";
+  const OPTIONS_KEY = "hated-game:options-v1";
+  const DECK_POSITIONS = ["upper-left", "upper-right", "lower-left", "lower-right"];
+  const DEFAULT_OPTIONS = { deckPosition: "upper-left" };
 
   const elements = {
+    board: document.querySelector("main"),
     score: document.querySelector("#score"),
     stock: document.querySelector("#stock"),
     waste: document.querySelector("#waste"),
@@ -24,6 +28,7 @@
     menuBackdrop: document.querySelector("#menu-backdrop"),
     menuButton: document.querySelector("#menu-button"),
     rules: document.querySelector("#rules-dialog"),
+    options: document.querySelector("#options-dialog"),
     wastePreview: document.querySelector("#waste-preview"),
     wasteCards: document.querySelector("#waste-cards"),
     result: document.querySelector("#result-dialog"),
@@ -47,6 +52,43 @@
   let wasteLongPress = null;
   let wasteClickTimer = null;
   let wastePreviewOpenedAt = 0;
+  let options = loadOptions();
+
+  function loadOptions() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(OPTIONS_KEY));
+      if (saved && DECK_POSITIONS.includes(saved.deckPosition)) {
+        return { deckPosition: saved.deckPosition };
+      }
+    } catch {
+      // Fall through to defaults when storage is unavailable or corrupt.
+    }
+    return { ...DEFAULT_OPTIONS };
+  }
+
+  function persistOptions() {
+    try {
+      window.localStorage.setItem(OPTIONS_KEY, JSON.stringify(options));
+    } catch {
+      // Options still apply for this session when storage is unavailable.
+    }
+  }
+
+  function applyDeckPosition(position = options.deckPosition) {
+    const next = DECK_POSITIONS.includes(position) ? position : DEFAULT_OPTIONS.deckPosition;
+    options.deckPosition = next;
+    elements.board.dataset.deckPosition = next;
+    document.querySelectorAll('input[name="deck-position"]').forEach((input) => {
+      input.checked = input.value === next;
+    });
+  }
+
+  function setDeckPosition(position) {
+    if (!DECK_POSITIONS.includes(position) || position === options.deckPosition) return;
+    applyDeckPosition(position);
+    persistOptions();
+    render();
+  }
 
   function createDeck() {
     return SUITS.flatMap((suit, suitIndex) =>
@@ -1307,6 +1349,18 @@
   });
   document.querySelector("#close-rules").addEventListener("click", () => closeDialog(elements.rules));
   document.querySelector("#rules-done").addEventListener("click", () => closeDialog(elements.rules));
+  document.querySelector("#show-options").addEventListener("click", () => {
+    closeMenu();
+    applyDeckPosition();
+    openDialog(elements.options);
+  });
+  document.querySelector("#close-options").addEventListener("click", () => closeDialog(elements.options));
+  document.querySelector("#options-done").addEventListener("click", () => closeDialog(elements.options));
+  document.querySelectorAll('input[name="deck-position"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.checked) setDeckPosition(input.value);
+    });
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.menu.classList.contains("is-open")) {
       closeMenu();
@@ -1335,6 +1389,7 @@
     event.returnValue = "";
   });
   renderBuildInfo();
+  applyDeckPosition();
   const queryParams = new URLSearchParams(window.location.search);
   if (queryParams.has("stacked")) {
     // Deterministic visual-test deal; bypasses the session restore so every

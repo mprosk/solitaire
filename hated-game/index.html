@@ -37,26 +37,24 @@
       </div>
     </header>
 
-    <main>
-      <section class="upper-board" aria-label="Deck and up piles">
-        <div class="pile-group">
-          <div>
-            <button id="stock" class="card-slot" type="button" aria-label="Draw from deck"></button>
-          </div>
-          <div>
-            <button
-              id="waste"
-              class="card-slot"
-              type="button"
-              aria-label="Top revealed card"
-            ></button>
-          </div>
+    <main data-deck-position="upper-left">
+      <div class="pile-group" aria-label="Deck">
+        <div>
+          <button id="stock" class="card-slot" type="button" aria-label="Draw from deck"></button>
         </div>
+        <div>
+          <button
+            id="waste"
+            class="card-slot"
+            type="button"
+            aria-label="Top revealed card"
+          ></button>
+        </div>
+      </div>
 
-        <div class="foundation-zone">
-          <div id="foundations" class="foundations" aria-label="Up piles"></div>
-        </div>
-      </section>
+      <div class="foundation-zone">
+        <div id="foundations" class="foundations" aria-label="Up piles"></div>
+      </div>
 
       <section class="play-area" aria-label="Playing area">
         <div id="tableau" class="tableau"></div>
@@ -91,7 +89,7 @@
       </button>
     </main>
 
-    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v1.5</footer>
+    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v1.6</footer>
 
     <div id="menu-backdrop" class="menu-backdrop" hidden></div>
     <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
@@ -105,11 +103,44 @@
         <button id="new-game" type="button">New game</button>
         <button id="restart-game" type="button">Restart this deal</button>
         <button id="undo" type="button">Undo</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <button id="show-options" type="button">Options</button>
         <button id="show-rules" type="button">How to play</button>
         <div class="menu-divider" aria-hidden="true"></div>
         <a id="back-to-picker" class="menu-link" href="../">All games</a>
       </div>
     </aside>
+
+    <dialog id="options-dialog" class="options-dialog">
+      <div class="dialog-heading">
+        <h2>Options</h2>
+        <button id="close-options" class="icon-button dark" type="button" aria-label="Close options">
+          ×
+        </button>
+      </div>
+      <fieldset class="option-group">
+        <legend>Deck location</legend>
+        <div class="option-choices" role="radiogroup" aria-label="Deck location">
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="upper-left" checked />
+            <span>Upper left</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="upper-right" />
+            <span>Upper right</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="lower-left" />
+            <span>Lower left</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="lower-right" />
+            <span>Lower right</span>
+          </label>
+        </div>
+      </fieldset>
+      <button id="options-done" class="primary-button" type="button">Done</button>
+    </dialog>
 
     <dialog id="rules-dialog" class="rules-dialog">
       <div class="dialog-heading">
