@@ -191,11 +191,16 @@ main {
 }
 
 .card-slot.empty-foundation::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   content: attr(data-suit);
   color: rgb(255 255 255 / 18%);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: calc(var(--card-width) * 0.47);
+  font-size: calc(var(--card-width) * 0.58);
   font-weight: 700;
+  line-height: 1;
 }
 
 .foundation-start-rank {
@@ -711,6 +716,12 @@ dialog::backdrop {
     gap: 0.06em;
     font-size: min(calc(var(--card-width) * 0.42), 2rem);
     white-space: nowrap;
+  }
+
+  .foundation-start-rank {
+    top: 6%;
+    left: 8%;
+    font-size: min(calc(var(--card-width) * 0.42), 2rem);
   }
 
   .waste-card-wrap {
