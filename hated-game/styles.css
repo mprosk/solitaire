@@ -372,7 +372,8 @@ main {
 }
 
 .reserve .pile-count {
-  inset: 9px 6px auto auto;
+  /* Local bottom-left → visual upper-left after the 90° reserve rotation. */
+  inset: auto auto 9px 6px;
   transform: rotate(-90deg);
 }
 
