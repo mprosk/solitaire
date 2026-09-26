@@ -1,7 +1,7 @@
 {
-  "name": "Solitaire",
-  "short_name": "Solitaire",
-  "description": "Pick a solitaire game to play.",
+  "name": "GuyGames Solitaire",
+  "short_name": "GuyGames",
+  "description": "Pick a GuyGames solitaire game to play.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

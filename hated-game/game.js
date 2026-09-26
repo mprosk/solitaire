@@ -1,3 +1,11 @@
+import { mountAccountUi } from "../lib/account-ui.js";
+import { createLeaderboardUi } from "../lib/leaderboard-ui.js";
+import {
+  getSession,
+  hatedGameResultPayload,
+  insertGameResult,
+} from "../lib/supabase.js";
+
 (() => {
   "use strict";
 
@@ -9,7 +17,9 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.7";
+  const VERSION = "v2.0";
+  /** Fixed repo — pathname is not reliable on the custom domain (site root). */
+  const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
   const DECK_POSITIONS = ["upper-left", "upper-right", "lower-left", "lower-right"];
@@ -40,6 +50,8 @@
     keepPlaying: document.querySelector("#keep-playing"),
     boardNewGame: document.querySelector("#board-new-game"),
     undo: document.querySelector("#undo"),
+    resultLoginPrompt: document.querySelector("#result-login-prompt"),
+    resultLogin: document.querySelector("#result-login"),
   };
 
   let state;
@@ -53,6 +65,18 @@
   let wasteClickTimer = null;
   let wastePreviewOpenedAt = 0;
   let options = loadOptions();
+  let dealResultId = crypto.randomUUID();
+  let dealResultSubmitted = false;
+
+  const leaderboard = createLeaderboardUi({
+    gameSlug: "hated-game",
+    defaultSort: "wins",
+  });
+  const account = mountAccountUi({
+    loginButton: document.querySelector("#menu-login"),
+    logoutButton: document.querySelector("#menu-logout"),
+    screenNameEl: document.querySelector("[data-gg-screen-name]"),
+  });
 
   function loadOptions() {
     try {
@@ -122,6 +146,8 @@
           state,
           originalDeal,
           history: history.slice(-20),
+          dealResultId,
+          dealResultSubmitted,
         }),
       );
     } catch {
@@ -143,6 +169,8 @@
       state = saved.state;
       originalDeal = saved.originalDeal;
       history = Array.isArray(saved.history) ? saved.history : [];
+      dealResultId = saved.dealResultId || crypto.randomUUID();
+      dealResultSubmitted = Boolean(saved.dealResultSubmitted);
       selection = null;
       transientStatus = DEFAULT_STATUS;
       render();
@@ -162,13 +190,50 @@
     );
   }
 
-  function requestNewGame() {
-    if (
-      !hasProgress() ||
-      window.confirm("Start a new game? Your current progress will be lost.")
-    ) {
-      startNewGame();
+  /** Active deal that is not at a final win/loss end state (includes a fresh deal). */
+  function isActiveDeal() {
+    return Boolean(state && !state.gameOver && !state.winDeclared);
+  }
+
+  async function submitDealOutcome(outcome) {
+    if (dealResultSubmitted) return;
+    const {
+      data: { session },
+    } = await getSession();
+    if (!session) return;
+
+    dealResultSubmitted = true;
+    persistGame();
+    const payload = hatedGameResultPayload(
+      {
+        winDeclared: outcome === "win" || state.winDeclared,
+        gameOver: outcome,
+        score: score(),
+      },
+      dealResultId,
+    );
+    try {
+      const { error } = await insertGameResult(payload);
+      if (error) {
+        dealResultSubmitted = false;
+        persistGame();
+      }
+    } catch {
+      dealResultSubmitted = false;
+      persistGame();
     }
+  }
+
+  function requestNewGame() {
+    if (isActiveDeal()) {
+      const ok = window.confirm(
+        "Forfeit this game? It will be counted as a game loss on the leaderboard.",
+      );
+      if (!ok) return;
+      void submitDealOutcome("forfeit").finally(() => startNewGame());
+      return;
+    }
+    startNewGame();
   }
 
   function requestRestart() {
@@ -208,6 +273,8 @@
     history = [];
     selection = null;
     transientStatus = DEFAULT_STATUS;
+    dealResultId = crypto.randomUUID();
+    dealResultSubmitted = false;
     closeDialog(elements.result);
     closeMenu();
     render();
@@ -218,6 +285,10 @@
     history = [];
     selection = null;
     transientStatus = DEFAULT_STATUS;
+    // Same deal / same client_result_id — only clear submitted if nothing was recorded yet.
+    if (!dealResultSubmitted) {
+      dealResultId = crypto.randomUUID();
+    }
     closeMenu();
     closeDialog(elements.result);
     render();
@@ -708,6 +779,7 @@
 
     if ((fullyCleared || earlyWin) && !state.winDeclared) {
       state.winDeclared = true;
+      void submitDealOutcome("win");
       showResult("win");
     }
 
@@ -717,11 +789,12 @@
 
     if (!state.winDeclared && state.stock.length === 0 && !hasProductiveMove()) {
       state.gameOver = "loss";
+      void submitDealOutcome("loss");
       showResult("loss");
     }
   }
 
-  function showResult(result) {
+  async function showResult(result) {
     const won = result === "win";
     elements.resultSymbol.textContent = won ? "♛" : "♠";
     elements.resultTitle.textContent = won ? "You won!" : "No moves remain";
@@ -733,6 +806,15 @@
     elements.resultActions.classList.remove("single-action");
     elements.keepPlaying.textContent = won ? "Return to board" : "View board";
     elements.keepPlaying.hidden = false;
+
+    const {
+      data: { session },
+    } = await getSession();
+    const showLoginCta = won && !session;
+    if (elements.resultLoginPrompt) {
+      elements.resultLoginPrompt.hidden = !showLoginCta;
+    }
+
     openDialog(elements.result);
   }
 
@@ -824,14 +906,9 @@
     buildInfo.textContent = VERSION;
     buildInfo.setAttribute("aria-label", `Version ${VERSION}. Activate to copy.`);
 
-    if (!window.location.hostname.endsWith(".github.io")) return;
-    const owner = window.location.hostname.split(".")[0];
-    const repository = window.location.pathname.split("/").filter(Boolean)[0];
-    if (!owner || !repository) return;
-
     try {
       const response = await fetch(
-        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits?per_page=1`,
+        `https://api.github.com/repos/${encodeURIComponent(GITHUB_REPO.owner)}/${encodeURIComponent(GITHUB_REPO.name)}/commits?per_page=1`,
       );
       if (!response.ok) return;
       const commits = await response.json();
@@ -853,29 +930,39 @@
     const overlap = window.matchMedia("(max-width: 620px)").matches
       ? Math.max(wasteRect.width * 0.62, 25)
       : Math.max(wasteRect.width * 0.4, 21);
-    elements.wasteCards.innerHTML = state.waste
-      .map(
-        (card, index) => `
-          <div
-            class="waste-card-wrap"
-            role="listitem"
-            aria-label="${card.label}"
-            style="
-              --waste-delay: ${Math.min(index * 15, 240)}ms;
-              --waste-duration: ${Math.min(190 + index * 7, 420)}ms;
-              --waste-entry-offset: -${index * overlap}px;
-            "
-          >
-            ${cardMarkup(card, "waste-history-card")}
-          </div>
-        `,
-      )
-      .join("");
+    // Cap entry travel so late-game piles don't animate thousands of px.
+    const maxEntry = Math.min(overlap * 6, 120);
+
     elements.wastePreview.style.setProperty("--waste-left", `${wasteRect.left}px`);
     elements.wastePreview.style.setProperty("--waste-top", `${wasteRect.top}px`);
+    elements.wasteCards.replaceChildren();
     elements.wastePreview.hidden = false;
     wastePreviewOpenedAt = Date.now();
-    elements.wastePreview.focus({ preventScroll: true });
+
+    // Paint the solid overlay first, then mount cards on the next frame.
+    requestAnimationFrame(() => {
+      if (elements.wastePreview.hidden) return;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const fragment = document.createDocumentFragment();
+      state.waste.forEach((card, index) => {
+        const wrap = document.createElement("div");
+        wrap.className = "waste-card-wrap";
+        wrap.setAttribute("role", "listitem");
+        wrap.setAttribute("aria-label", card.label);
+        if (!reduceMotion) {
+          wrap.style.setProperty("--waste-delay", `${Math.min(index * 8, 96)}ms`);
+          wrap.style.setProperty("--waste-duration", `160ms`);
+          wrap.style.setProperty(
+            "--waste-entry-offset",
+            `-${Math.min(index * overlap * 0.35, maxEntry)}px`,
+          );
+        }
+        wrap.innerHTML = cardMarkup(card, "waste-history-card");
+        fragment.append(wrap);
+      });
+      elements.wasteCards.replaceChildren(fragment);
+      elements.wastePreview.focus({ preventScroll: true });
+    });
   }
 
   function closeWasteStack() {
@@ -1353,10 +1440,16 @@
   });
   document.querySelector("#close-rules").addEventListener("click", () => closeDialog(elements.rules));
   document.querySelector("#rules-done").addEventListener("click", () => closeDialog(elements.rules));
+  document.querySelector("#menu-login").addEventListener("click", closeMenu);
+  document.querySelector("#menu-logout").addEventListener("click", closeMenu);
   document.querySelector("#show-options").addEventListener("click", () => {
     closeMenu();
     applyDeckPosition();
     openDialog(elements.options);
+  });
+  document.querySelector("#show-leaderboard").addEventListener("click", () => {
+    closeMenu();
+    leaderboard.open({ gameSlug: "hated-game" });
   });
   document.querySelector("#close-options").addEventListener("click", () => closeDialog(elements.options));
   document.querySelector("#options-done").addEventListener("click", () => closeDialog(elements.options));
@@ -1385,12 +1478,23 @@
   elements.resultNewGame.addEventListener("click", requestNewGame);
   elements.boardNewGame.addEventListener("click", requestNewGame);
   elements.keepPlaying.addEventListener("click", () => closeDialog(elements.result));
+  elements.resultLogin?.addEventListener("click", () => {
+    closeDialog(elements.result);
+    account.openLogin();
+  });
+
+  let allowUnload = false;
 
   window.addEventListener("resize", render);
   window.addEventListener("beforeunload", (event) => {
-    if (!hasProgress()) return;
+    if (allowUnload || !hasProgress()) return;
     event.preventDefault();
     event.returnValue = "";
+  });
+  document.querySelector("#back-to-picker").addEventListener("click", (event) => {
+    event.preventDefault();
+    allowUnload = true;
+    window.location.assign(new URL("../", window.location.href).href);
   });
   renderBuildInfo();
   applyDeckPosition();

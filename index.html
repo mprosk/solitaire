@@ -7,13 +7,14 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Solitaire" />
-    <meta name="description" content="Pick a solitaire game to play." />
-    <title>Solitaire</title>
+    <meta name="apple-mobile-web-app-title" content="GuyGames Solitaire" />
+    <meta name="description" content="Pick a GuyGames solitaire game to play." />
+    <title>GuyGames Solitaire</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=1.1" />
+    <link rel="stylesheet" href="styles.css?v=2.0" />
+    <link rel="stylesheet" href="lib/guygames-ui.css?v=2.0" />
     <style>
       /* Critical layout inlined so a stale SW can't leave bare blue links. */
       .game-list {
@@ -85,7 +86,18 @@
   </head>
   <body>
     <header class="topbar">
-      <h1>Solitaire</h1>
+      <button
+        id="menu-button"
+        class="icon-button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu-drawer"
+        type="button"
+      >
+        <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <h1>GuyGames Solitaire</h1>
+      <span class="topbar-spacer" aria-hidden="true"></span>
     </header>
 
     <main>
@@ -135,9 +147,28 @@
       title="Copy version"
       role="button"
       tabindex="0"
-    >v1.1</footer>
+    >v2.0</footer>
 
-    <script src="app.js"></script>
+    <div id="menu-backdrop" class="menu-backdrop" hidden></div>
+    <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Menu">
+      <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
+        ×
+      </button>
+      <div class="dialog-heading">
+        <h2>Menu</h2>
+      </div>
+      <div class="menu-actions">
+        <button id="show-leaderboard" type="button">Leaderboard</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <p class="gg-screen-name" data-gg-screen-name hidden></p>
+        <div class="gg-menu-auth">
+          <button id="menu-login" class="gg-login-btn" type="button">Log In</button>
+          <button id="menu-logout" class="gg-logout-btn" type="button" hidden>Log Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <script type="module" src="app.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
