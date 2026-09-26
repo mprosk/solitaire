@@ -5,7 +5,12 @@
   --felt-light: #216d4e;
   --cream: #f7f1e5;
   --ink: #19201d;
+  --red: #b92f3d;
   --gold: #e8c46b;
+  --topbar-height: 64px;
+  --topbar-inline: clamp(12px, 3vw, 28px);
+  --menu-button-size: 42px;
+  --menu-drawer-inline: 18px;
   font-family: Georgia, "Times New Roman", ui-serif, serif;
 }
 
@@ -30,20 +35,98 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
 .topbar {
+  position: relative;
   display: grid;
-  place-items: center;
-  min-height: 64px;
-  padding: 8px 16px;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: var(--topbar-height);
+  padding: 8px var(--topbar-inline);
   background: rgba(8, 37, 26, 0.58);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 15px rgb(0 0 0 / 15%);
+}
+
+.topbar-spacer {
+  width: var(--menu-button-size);
+  height: var(--menu-button-size);
 }
 
 h1 {
+  position: absolute;
+  left: 50%;
   margin: 0;
-  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  font-size: clamp(1.2rem, 3.6vw, 1.75rem);
   font-weight: 600;
   letter-spacing: 0.02em;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.icon-button {
+  display: grid;
+  width: var(--menu-button-size);
+  height: var(--menu-button-size);
+  padding: 0;
+  color: white;
+  font-size: 1.65rem;
+  line-height: 1;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.menu-glyph {
+  position: relative;
+  display: block;
+  width: 21px;
+  height: 14px;
+}
+
+.menu-glyph i {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.menu-glyph i:nth-child(1) {
+  top: 0;
+}
+
+.menu-glyph i:nth-child(2) {
+  top: 6px;
+}
+
+.menu-glyph i:nth-child(3) {
+  top: 12px;
+}
+
+.icon-button.dark {
+  color: var(--ink);
+}
+
+.icon-button.dark:hover {
+  background: rgb(0 0 0 / 7%);
 }
 
 main {
@@ -153,4 +236,121 @@ a.game-link:focus-visible {
   color: rgba(255, 255, 255, 0.7);
   outline: 2px solid var(--gold);
   outline-offset: 3px;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgb(4 24 17 / 55%);
+  backdrop-filter: blur(2px);
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-backdrop[hidden] {
+  display: none;
+}
+
+.menu-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100% - 48px));
+  padding: 0 var(--menu-drawer-inline) max(22px, env(safe-area-inset-bottom));
+  color: var(--ink);
+  background: #fffdf8;
+  box-shadow: 8px 0 40px rgb(0 0 0 / 28%);
+  transform: translateX(-105%);
+  visibility: hidden;
+  transition:
+    transform 220ms ease,
+    visibility 220ms ease;
+}
+
+.menu-drawer.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.menu-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.menu-actions button,
+.primary-button {
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: none;
+  background: #f1ecdf;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.menu-actions button:hover {
+  background: #e9e1d2;
+}
+
+.menu-divider {
+  width: 40%;
+  height: 1px;
+  margin: 10px auto;
+  background: rgb(0 0 0 / 14%);
+}
+
+.menu-drawer .dialog-heading {
+  display: flex;
+  align-items: center;
+  min-height: var(--topbar-height);
+  margin-bottom: 12px;
+  padding-left: calc(var(--topbar-inline) + var(--menu-button-size) - var(--menu-drawer-inline));
+  justify-content: flex-start;
+}
+
+.menu-drawer .dialog-heading h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.menu-drawer #close-menu {
+  position: absolute;
+  top: calc((var(--topbar-height) - var(--menu-button-size)) / 2);
+  left: var(--topbar-inline);
+}
+
+dialog {
+  width: min(calc(100% - 32px), 430px);
+  padding: 22px;
+  color: var(--ink);
+  background: #fffdf8;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 38%);
+}
+
+dialog::backdrop {
+  background: rgb(4 24 17 / 72%);
+  backdrop-filter: blur(3px);
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.dialog-heading h2 {
+  margin: 0;
+  font-size: 1.25rem;
 }

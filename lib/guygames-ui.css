@@ -1,0 +1,340 @@
+/* Shared account + leaderboard dialog chrome (picker + game apps). */
+
+.gg-menu-auth {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.gg-menu-auth .gg-login-btn {
+  color: #fff;
+  background: var(--felt, #18563d);
+  border-color: var(--felt-dark, #103d2c);
+}
+
+.gg-menu-auth .gg-login-btn:hover {
+  background: var(--felt-light, #216d4e);
+}
+
+.gg-menu-auth .gg-logout-btn {
+  color: #fff;
+  background: var(--red, #b92f3d);
+  border-color: #8f2430;
+}
+
+.gg-menu-auth .gg-logout-btn:hover {
+  background: #9e2935;
+}
+
+.gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-logout-btn[hidden] {
+  display: none;
+}
+
+.gg-screen-name {
+  margin: 0 0 8px;
+  color: rgb(0 0 0 / 55%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.gg-screen-name[hidden] {
+  display: none;
+}
+
+.gg-field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.gg-field label {
+  font-weight: 650;
+}
+
+.gg-field input,
+.gg-field select {
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--ink, #19201d);
+  font: inherit;
+  background: #fff;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+}
+
+.gg-field-hint,
+.gg-form-error,
+.gg-form-status {
+  margin: 0 0 12px;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.88rem;
+}
+
+.gg-field-hint {
+  color: rgb(0 0 0 / 55%);
+}
+
+.gg-form-error {
+  color: var(--red, #b92f3d);
+}
+
+.gg-form-status {
+  color: var(--felt-dark, #103d2c);
+}
+
+.gg-form-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.gg-form-actions .primary-button,
+dialog .gg-primary,
+.leaderboard-page .gg-primary {
+  color: #fff;
+  background: var(--felt, #18563d);
+  border-color: var(--felt-dark, #103d2c);
+}
+
+.gg-form-actions .primary-button:hover,
+dialog .gg-primary:hover,
+.leaderboard-page .gg-primary:hover {
+  background: var(--felt-light, #216d4e);
+}
+
+/* Keep email/username dialogs in the upper quarter so the mobile keyboard doesn't cover them. */
+.gg-login-dialog,
+.gg-username-dialog {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  max-height: min(70vh, 520px);
+  overflow: auto;
+}
+
+body.leaderboard-open {
+  overflow: hidden;
+}
+
+.leaderboard-page {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  background:
+    radial-gradient(circle at 50% -10%, var(--felt-light, #216d4e), transparent 52%),
+    var(--felt, #18563d);
+  font-family: Georgia, "Times New Roman", ui-serif, serif;
+}
+
+.leaderboard-page[hidden] {
+  display: none;
+}
+
+.leaderboard-page-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 64px;
+  padding: 8px clamp(12px, 3vw, 28px);
+  background: rgb(8 37 26 / 58%);
+  border-bottom: 1px solid rgb(255 255 255 / 12%);
+  box-shadow: 0 2px 15px rgb(0 0 0 / 15%);
+}
+
+.leaderboard-page-topbar .icon-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: #fff;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.leaderboard-page-topbar .icon-button:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.back-glyph {
+  display: block;
+  width: 11px;
+  height: 11px;
+  margin-left: 3px;
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.leaderboard-page-topbar h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.leaderboard-topbar-spacer {
+  width: 42px;
+  height: 42px;
+}
+
+.leaderboard-page-body {
+  flex: 1;
+  overflow: auto;
+  padding: 18px clamp(12px, 3vw, 24px) max(24px, env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+.leaderboard-toolbar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.leaderboard-page .gg-field {
+  margin-bottom: 0;
+}
+
+.leaderboard-page .gg-field label {
+  color: rgb(255 255 255 / 78%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.leaderboard-page .gg-field select {
+  color: var(--ink, #19201d);
+  background: var(--cream, #f7f1e5);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 18%);
+}
+
+.leaderboard-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 14px;
+  background: var(--cream, #f7f1e5);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 18%);
+  -webkit-overflow-scrolling: touch;
+}
+
+.leaderboard-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  color: var(--ink, #19201d);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.86rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 11px 12px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid rgb(0 0 0 / 8%);
+}
+
+.leaderboard-table th:nth-child(1),
+.leaderboard-table td:nth-child(1),
+.leaderboard-table th:nth-child(2),
+.leaderboard-table td:nth-child(2) {
+  text-align: left;
+}
+
+.leaderboard-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.leaderboard-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--felt-dark, #103d2c);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: #ebe4d4;
+}
+
+.leaderboard-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.leaderboard-table th.sortable:hover,
+.leaderboard-table th.is-active {
+  color: var(--felt, #18563d);
+  background: #dfece5;
+}
+
+.leaderboard-table th.is-active::after {
+  content: " ▾";
+}
+
+.leaderboard-table tr.is-you {
+  background: #dfece5;
+}
+
+.leaderboard-table tr.is-you td {
+  font-weight: 700;
+}
+
+.leaderboard-empty,
+.leaderboard-status {
+  margin: 18px 0 0;
+  color: rgb(255 255 255 / 72%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.leaderboard-you-block {
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+.leaderboard-you-block h3 {
+  margin: 0 0 10px;
+  color: rgb(255 255 255 / 78%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.result-login-prompt {
+  margin: 12px 0 0;
+  padding: 12px;
+  text-align: center;
+  background: #f3eee3;
+  border-radius: 10px;
+}
+
+.result-login-prompt p {
+  margin: 0 0 10px;
+}
+
+.result-login-prompt[hidden] {
+  display: none;
+}

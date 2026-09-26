@@ -17,6 +17,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../lib/guygames-ui.css?v=5" />
   </head>
   <body>
     <header class="topbar">
@@ -89,7 +90,7 @@
       </button>
     </main>
 
-    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v1.7</footer>
+    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v1.8</footer>
 
     <div id="menu-backdrop" class="menu-backdrop" hidden></div>
     <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
@@ -105,9 +106,16 @@
         <button id="undo" type="button">Undo</button>
         <div class="menu-divider" aria-hidden="true"></div>
         <button id="show-options" type="button">Options</button>
+        <button id="show-leaderboard" type="button">Leaderboard</button>
         <button id="show-rules" type="button">How to play</button>
         <div class="menu-divider" aria-hidden="true"></div>
         <a id="back-to-picker" class="menu-link" href="../">All games</a>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <p class="gg-screen-name" data-gg-screen-name hidden></p>
+        <div class="gg-menu-auth">
+          <button id="menu-login" class="gg-login-btn" type="button">Log In</button>
+          <button id="menu-logout" class="gg-logout-btn" type="button" hidden>Log Out</button>
+        </div>
       </div>
     </aside>
 
@@ -192,13 +200,17 @@
       <div id="result-symbol" class="result-symbol" aria-hidden="true"></div>
       <h2 id="result-title"></h2>
       <p id="result-message"></p>
+      <div id="result-login-prompt" class="result-login-prompt" hidden>
+        <p>Save this win to the leaderboard — log in with your email.</p>
+        <button id="result-login" class="primary-button gg-primary" type="button">Log In</button>
+      </div>
       <div class="result-actions">
         <button id="keep-playing" type="button">Keep looking</button>
         <button id="result-new-game" class="primary-button" type="button">New game</button>
       </div>
     </dialog>
 
-    <script src="game.js"></script>
+    <script type="module" src="game.js"></script>
     <script>
       // Service worker: keep it for installs/offline, but let devs opt out.
       // Visit ?sw=off once to unregister + skip registration on this browser
