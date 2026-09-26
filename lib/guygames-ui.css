@@ -95,6 +95,33 @@
   margin-bottom: 8px;
 }
 
+.gg-otp-form {
+  margin-top: 4px;
+}
+
+.gg-otp-form #gg-otp-token {
+  letter-spacing: 0.28em;
+  font-size: 1.25rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.gg-form-actions .gg-secondary {
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--ink, #19201d);
+  font: inherit;
+  font-weight: 650;
+  background: #f1ecdf;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.gg-form-actions .gg-secondary:hover {
+  background: #e9e1d2;
+}
+
 .gg-form-actions {
   display: grid;
   gap: 9px;

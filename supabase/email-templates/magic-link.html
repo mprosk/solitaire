@@ -1,0 +1,26 @@
+<!--
+  Supabase Dashboard → Authentication → Email → Templates → Magic Link
+  Paste the body below (subject can stay: "Your GuyGames sign-in code" or similar).
+-->
+<h2>Sign in to GuyGames Solitaire</h2>
+<p>This sign-in expires shortly and can only be used once.</p>
+
+<p style="margin: 8px 0 4px; font-size: 14px; font-weight: bold; color: #18563d;">Mobile users</p>
+<p style="margin: 0 0 8px; font-size: 14px; color: #444;">
+  Home screen app? Enter this 6-digit code in the app. Opening the link in Chrome or Safari
+  signs you into the browser instead, and you won’t stay logged in on the bookmark.
+</p>
+<p style="margin: 12px 0 28px; font-size: 32px; font-weight: bold; letter-spacing: 0.28em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+  {{ .Token }}
+</p>
+
+<p style="margin: 8px 0 4px; font-size: 14px; font-weight: bold; color: #18563d;">Desktop users</p>
+<p style="margin: 0 0 8px; font-size: 14px; color: #444;">
+  Follow the link below to sign in.
+</p>
+<p style="margin: 24px 0;">
+  <a
+    href="{{ .ConfirmationURL }}"
+    style="display: inline-block; font-size: 20px; font-weight: bold; padding: 14px 28px; background: #18563d; text-decoration: none; border-radius: 8px;"
+  ><span style="color: #000000 !important;"><font color="#000000">♠</font></span> <span style="color: #e11d48 !important;"><font color="#e11d48">♥</font></span> <span style="color: #ffffff !important;"><font color="#ffffff">Sign in</font></span> <span style="color: #e11d48 !important;"><font color="#e11d48">♦</font></span> <span style="color: #000000 !important;"><font color="#000000">♣</font></span></a>
+</p>
