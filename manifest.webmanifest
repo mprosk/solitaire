@@ -1,7 +1,7 @@
 {
   "name": "GuyGames Solitaire",
-  "short_name": "GuyGames Solitaire",
-  "description": "Pick a GuyGames solitaire game to play.",
+  "short_name": "GuyGames",
+  "description": "Classic Molstre/Guy family solitaire games.",
   "id": "/",
   "start_url": "./",
   "scope": "./",
