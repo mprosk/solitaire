@@ -82,6 +82,17 @@
 
 .gg-form-status {
   color: var(--felt-dark, #103d2c);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.gg-login-sent[hidden] {
+  display: none;
+}
+
+.gg-login-sent .gg-form-status {
+  margin-bottom: 8px;
 }
 
 .gg-form-actions {
