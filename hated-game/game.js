@@ -17,7 +17,7 @@ import {
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.9";
+  const VERSION = "v2.0";
   /** Fixed repo — pathname is not reliable on the custom domain (site root). */
   const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
   const STORAGE_KEY = "hated-game:save-v1";

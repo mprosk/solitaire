@@ -1,7 +1,7 @@
 import { mountAccountUi } from "./lib/account-ui.js";
 import { createLeaderboardUi } from "./lib/leaderboard-ui.js";
 
-const VERSION = "v1.2";
+const VERSION = "v2.0";
 /** Fixed repo — pathname is not reliable on the custom domain (site root). */
 const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
 
