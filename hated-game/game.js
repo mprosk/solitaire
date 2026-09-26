@@ -222,13 +222,6 @@
     } catch {
       return;
     }
-    const {
-      data: { session },
-    } = await supabaseApi.getSession();
-    if (!session) return;
-
-    dealResultSubmitted = true;
-    persistGame();
     const payload = supabaseApi.hatedGameResultPayload(
       {
         winDeclared: outcome === "win" || state.winDeclared,
@@ -237,14 +230,28 @@
       },
       dealResultId,
     );
+
+    const {
+      data: { session },
+    } = await supabaseApi.getSession();
+    if (!session) {
+      // Keep the win (etc.) for after magic-link / account creation.
+      supabaseApi.queuePendingGameResult(payload);
+      return;
+    }
+
+    dealResultSubmitted = true;
+    persistGame();
     try {
       const { error } = await supabaseApi.insertGameResult(payload);
       if (error) {
         dealResultSubmitted = false;
+        supabaseApi.queuePendingGameResult(payload);
         persistGame();
       }
     } catch {
       dealResultSubmitted = false;
+      supabaseApi.queuePendingGameResult(payload);
       persistGame();
     }
   }
