@@ -1,9 +1,9 @@
-const CACHE_NAME = "solitaire-picker-v1.9";
+const CACHE_NAME = "solitaire-picker-v1.10";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=1.3",
+  "./styles.css?v=1.4",
   "./app.js",
   "./lib/supabase.js",
   "./lib/account-ui.js",

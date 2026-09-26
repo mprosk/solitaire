@@ -17,7 +17,7 @@ import {
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.8";
+  const VERSION = "v1.9";
   /** Fixed repo — pathname is not reliable on the custom domain (site root). */
   const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
   const STORAGE_KEY = "hated-game:save-v1";
@@ -930,29 +930,39 @@ import {
     const overlap = window.matchMedia("(max-width: 620px)").matches
       ? Math.max(wasteRect.width * 0.62, 25)
       : Math.max(wasteRect.width * 0.4, 21);
-    elements.wasteCards.innerHTML = state.waste
-      .map(
-        (card, index) => `
-          <div
-            class="waste-card-wrap"
-            role="listitem"
-            aria-label="${card.label}"
-            style="
-              --waste-delay: ${Math.min(index * 15, 240)}ms;
-              --waste-duration: ${Math.min(190 + index * 7, 420)}ms;
-              --waste-entry-offset: -${index * overlap}px;
-            "
-          >
-            ${cardMarkup(card, "waste-history-card")}
-          </div>
-        `,
-      )
-      .join("");
+    // Cap entry travel so late-game piles don't animate thousands of px.
+    const maxEntry = Math.min(overlap * 6, 120);
+
     elements.wastePreview.style.setProperty("--waste-left", `${wasteRect.left}px`);
     elements.wastePreview.style.setProperty("--waste-top", `${wasteRect.top}px`);
+    elements.wasteCards.replaceChildren();
     elements.wastePreview.hidden = false;
     wastePreviewOpenedAt = Date.now();
-    elements.wastePreview.focus({ preventScroll: true });
+
+    // Paint the solid overlay first, then mount cards on the next frame.
+    requestAnimationFrame(() => {
+      if (elements.wastePreview.hidden) return;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const fragment = document.createDocumentFragment();
+      state.waste.forEach((card, index) => {
+        const wrap = document.createElement("div");
+        wrap.className = "waste-card-wrap";
+        wrap.setAttribute("role", "listitem");
+        wrap.setAttribute("aria-label", card.label);
+        if (!reduceMotion) {
+          wrap.style.setProperty("--waste-delay", `${Math.min(index * 8, 96)}ms`);
+          wrap.style.setProperty("--waste-duration", `160ms`);
+          wrap.style.setProperty(
+            "--waste-entry-offset",
+            `-${Math.min(index * overlap * 0.35, maxEntry)}px`,
+          );
+        }
+        wrap.innerHTML = cardMarkup(card, "waste-history-card");
+        fragment.append(wrap);
+      });
+      elements.wasteCards.replaceChildren(fragment);
+      elements.wastePreview.focus({ preventScroll: true });
+    });
   }
 
   function closeWasteStack() {

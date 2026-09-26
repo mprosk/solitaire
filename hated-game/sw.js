@@ -1,4 +1,4 @@
-const CACHE_NAME = "hated-game-v1.8-pwa5";
+const CACHE_NAME = "hated-game-v1.9-pwa1";
 const ASSETS = [
   "./",
   "./index.html",

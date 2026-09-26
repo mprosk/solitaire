@@ -242,8 +242,7 @@ a.game-link:focus-visible {
   position: fixed;
   inset: 0;
   z-index: 800;
-  background: rgb(4 24 17 / 55%);
-  backdrop-filter: blur(2px);
+  background: rgb(4 24 17 / 62%);
   border: 0;
   cursor: pointer;
 }
@@ -340,7 +339,6 @@ dialog {
 
 dialog::backdrop {
   background: rgb(4 24 17 / 72%);
-  backdrop-filter: blur(3px);
 }
 
 .dialog-heading {

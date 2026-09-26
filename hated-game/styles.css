@@ -623,8 +623,7 @@ main[data-deck-position="lower-right"] .pile-group {
   position: fixed;
   inset: 0;
   z-index: 800;
-  background: rgb(4 24 17 / 55%);
-  backdrop-filter: blur(2px);
+  background: rgb(4 24 17 / 62%);
   border: 0;
   cursor: pointer;
 }
@@ -645,12 +644,13 @@ main[data-deck-position="lower-right"] .pile-group {
   padding: 0 var(--menu-drawer-inline) max(22px, env(safe-area-inset-bottom));
   color: var(--ink);
   background: #fffdf8;
-  box-shadow: 8px 0 40px rgb(0 0 0 / 28%);
+  box-shadow: 4px 0 18px rgb(0 0 0 / 22%);
   transform: translateX(-105%);
   visibility: hidden;
   transition:
     transform 220ms ease,
     visibility 220ms ease;
+  will-change: transform;
 }
 
 .menu-drawer.is-open {
@@ -710,7 +710,6 @@ dialog {
 
 dialog::backdrop {
   background: rgb(4 24 17 / 72%);
-  backdrop-filter: blur(3px);
 }
 
 .dialog-heading {
@@ -825,9 +824,9 @@ dialog::backdrop {
   inset: 0;
   z-index: 900;
   color: white;
-  background: rgb(8 48 34 / 22%);
-  backdrop-filter: blur(2px);
+  background: rgb(8 48 34 / 58%);
   cursor: zoom-out;
+  contain: paint;
 }
 
 .waste-preview[hidden] {
@@ -849,6 +848,7 @@ dialog::backdrop {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  contain: layout paint;
 }
 
 .waste-card-wrap {
@@ -856,7 +856,7 @@ dialog::backdrop {
   flex: 0 0 auto;
   width: var(--card-width);
   height: var(--waste-overlap);
-  animation: waste-card-deal var(--waste-duration, 190ms) ease-out both;
+  animation: waste-card-deal var(--waste-duration, 160ms) ease-out both;
   animation-delay: var(--waste-delay, 0ms);
 }
 
@@ -870,8 +870,17 @@ dialog::backdrop {
   width: var(--card-width);
   max-width: none;
   height: var(--card-height);
+  background: var(--cream);
+  box-shadow: none;
+  border-color: rgb(0 0 0 / 22%);
   cursor: default;
   touch-action: pan-y;
+  transition: none;
+}
+
+/* Buried waste cards only need the corner; skip the big suit watermark. */
+.waste-card-wrap:not(:last-child) .suit-large {
+  display: none;
 }
 
 .waste-preview-hint {
@@ -887,13 +896,11 @@ dialog::backdrop {
 
 @keyframes waste-card-deal {
   from {
-    opacity: 0;
-    transform: translateY(var(--waste-entry-offset, -14px)) scale(0.96);
+    transform: translateY(var(--waste-entry-offset, -14px));
   }
 
   to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -1004,5 +1011,9 @@ dialog::backdrop {
 @media (prefers-reduced-motion: reduce) {
   .menu-drawer {
     transition: none;
+  }
+
+  .waste-card-wrap {
+    animation: none;
   }
 }
