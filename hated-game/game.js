@@ -1461,7 +1461,24 @@ import {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.menu.classList.contains("is-open")) {
       closeMenu();
+      return;
     }
+
+    const undoKey =
+      (event.key === "z" || event.key === "Z") && (event.metaKey || event.ctrlKey) && !event.altKey;
+    if (!undoKey || event.shiftKey) return;
+
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      (target.closest("input, textarea, select, [contenteditable='true']") ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    undo();
   });
   wireBuildInfoCopy();
   elements.wastePreview.addEventListener("keydown", (event) => {
