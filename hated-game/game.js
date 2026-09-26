@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v1.6";
+  const VERSION = "v1.7";
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
   const DECK_POSITIONS = ["upper-left", "upper-right", "lower-left", "lower-right"];
@@ -681,10 +681,14 @@
         const destination = state.tableau[destinationIndex];
         if (!destination.length) continue;
         const exposed = destination[destination.length - 1];
-        // Whole stack, or the single bottom card alone.
+        // Whole-stack moves empty a column and count as progress.
+        if (canJoinTableau(source[0], exposed)) return true;
+        // Bottom-card peels are reversible tableau shuffles; only count them
+        // when they uncover a card that can play to an up pile.
         if (
-          canJoinTableau(source[0], exposed) ||
-          canJoinTableau(source[source.length - 1], exposed)
+          source.length > 1 &&
+          canJoinTableau(source[source.length - 1], exposed) &&
+          canJoinFoundation(source[source.length - 2], source[source.length - 2].suit)
         ) {
           return true;
         }
