@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v2.0";
+  const VERSION = "v2.1";
   /** Fixed repo — pathname is not reliable on the custom domain (site root). */
   const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
   const STORAGE_KEY = "hated-game:save-v1";
@@ -71,7 +71,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.0";
+    link.href = "../lib/guygames-ui.css?v=2.1";
     document.head.append(link);
   }
 
@@ -649,10 +649,13 @@
       const card = moveSingleCard ? sourcePile[sourcePile.length - 1] : sourcePile[0];
 
       if (destination.length === 0) {
-        setStatus("Only the top revealed deck card can fill an empty stack.");
-        return true;
-      }
-      if (!canJoinTableau(card, destination[destination.length - 1])) {
+        // Empty slots may be filled from the waste, or by the end card of a
+        // stack — not by dropping a whole multi-card stack.
+        if (!moveSingleCard && sourcePile.length > 1) {
+          setStatus("Move only the end card of a stack into an empty slot, or fill it from the revealed pile.");
+          return true;
+        }
+      } else if (!canJoinTableau(card, destination[destination.length - 1])) {
         setStatus("Those cards do not join in immediate descending, alternating-color order.");
         return true;
       }
@@ -673,7 +676,7 @@
 
     if (destination.length === 0) {
       if (selection.type !== "waste") {
-        setStatus("Only the top revealed deck card can fill an empty stack.");
+        setStatus("Only the end card of a stack or the revealed deck card can fill an empty slot.");
         return true;
       }
     } else if (!canJoinTableau(card, destination[destination.length - 1])) {
@@ -782,7 +785,12 @@
       ) {
         if (sourceIndex === destinationIndex) continue;
         const destination = state.tableau[destinationIndex];
-        if (!destination.length) continue;
+        if (!destination.length) {
+          // End card may fill an empty slot. A lone card only relocates the
+          // hole; peeling from a multi-card stack is real progress.
+          if (source.length > 1) return true;
+          continue;
+        }
         const exposed = destination[destination.length - 1];
         // Whole-stack moves empty a column and count as progress.
         if (canJoinTableau(source[0], exposed)) return true;
@@ -1241,7 +1249,13 @@
     const card = cardMovingToTableau(source, options);
     if (!card) return false;
     const destination = state.tableau[destinationIndex];
-    if (destination.length === 0) return source.type === "waste";
+    if (destination.length === 0) {
+      if (source.type === "waste") return true;
+      if (source.type !== "tableau") return false;
+      const pile = state.tableau[source.index];
+      // End card drag, or a lone card (the end by definition).
+      return Boolean(options.singleCard) || pile.length === 1;
+    }
     return canJoinTableau(card, destination[destination.length - 1]);
   }
 
