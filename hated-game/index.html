@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="../lib/guygames-ui.css?v=2.0" />
+    <link rel="modulepreload" href="game.js" />
   </head>
   <body>
     <header class="topbar">
@@ -218,7 +218,7 @@
       // cache-first worker keeps serving stale CSS/JS no matter how hard you
       // reload, which makes visual iteration miserable.
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
+        const registerSw = () => {
           const params = new URLSearchParams(window.location.search);
           let swOff = null;
           try {
@@ -254,6 +254,13 @@
             return;
           }
           navigator.serviceWorker.register("./sw.js").catch(() => {});
+        };
+        window.addEventListener("load", () => {
+          if (typeof window.requestIdleCallback === "function") {
+            window.requestIdleCallback(registerSw, { timeout: 4000 });
+          } else {
+            window.setTimeout(registerSw, 1);
+          }
         });
       }
     </script>

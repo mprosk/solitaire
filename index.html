@@ -16,7 +16,9 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css?v=2.0" />
-    <link rel="stylesheet" href="lib/guygames-ui.css?v=2.0" />
+    <link rel="prefetch" href="./hated-game/" as="document" />
+    <link rel="prefetch" href="./hated-game/game.js" as="script" />
+    <link rel="prefetch" href="./hated-game/styles.css" as="style" />
     <style>
       /* Critical layout inlined so a stale SW can't leave bare blue links. */
       .game-list {
@@ -174,7 +176,13 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./sw.js").catch(() => {});
+          const register = () =>
+            navigator.serviceWorker.register("./sw.js").catch(() => {});
+          if (typeof window.requestIdleCallback === "function") {
+            window.requestIdleCallback(register, { timeout: 4000 });
+          } else {
+            window.setTimeout(register, 1);
+          }
         });
       }
     </script>

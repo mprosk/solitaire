@@ -1,16 +1,10 @@
-const CACHE_NAME = "hated-game-v2.0";
+const CACHE_NAME = "hated-game-v2.0.1";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./game.js",
   "./manifest.webmanifest",
-  "../lib/guygames-ui.css",
-  "../lib/guygames-ui.css?v=2.0",
-  "../lib/supabase.js",
-  "../lib/account-ui.js",
-  "../lib/leaderboard-ui.js",
-  "../lib/games.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",

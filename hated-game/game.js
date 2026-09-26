@@ -60,14 +60,24 @@
   let dealResultId = crypto.randomUUID();
   let dealResultSubmitted = false;
 
-  /** Auth/leaderboard load after first paint so the board isn't blocked on the CDN. */
+  /** Auth/leaderboard load on demand so the first paint isn't fighting the CDN. */
   let account = null;
   let leaderboard = null;
   let supabaseApi = null;
   let authFeaturesPromise = null;
 
+  function ensureGuyGamesStyles() {
+    if (document.getElementById("gg-ui-css")) return;
+    const link = document.createElement("link");
+    link.id = "gg-ui-css";
+    link.rel = "stylesheet";
+    link.href = "../lib/guygames-ui.css?v=2.0";
+    document.head.append(link);
+  }
+
   function loadAuthFeatures() {
     if (authFeaturesPromise) return authFeaturesPromise;
+    ensureGuyGamesStyles();
     authFeaturesPromise = Promise.all([
       import("../lib/account-ui.js"),
       import("../lib/leaderboard-ui.js"),
@@ -1557,13 +1567,12 @@
     buildStackedTestPile();
   } else if (!restoreSavedGame()) startNewGame();
 
-  // After first paint: warm auth modules, then lazily fill the version hash.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
+  // After first paint + load: quietly warm auth so menu/login/submit never hitch.
+  // Interaction paths still await the same promise if the user gets there first.
+  window.addEventListener("load", () => {
+    scheduleIdle(() => {
       void loadAuthFeatures();
-      scheduleIdle(() => {
-        void renderBuildInfo();
-      });
+      void renderBuildInfo();
     });
   });
 })();

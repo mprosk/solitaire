@@ -12,6 +12,13 @@ let authFeaturesPromise = null;
 
 function loadAuthFeatures() {
   if (authFeaturesPromise) return authFeaturesPromise;
+  if (!document.getElementById("gg-ui-css")) {
+    const link = document.createElement("link");
+    link.id = "gg-ui-css";
+    link.rel = "stylesheet";
+    link.href = "lib/guygames-ui.css?v=2.0";
+    document.head.append(link);
+  }
   authFeaturesPromise = Promise.all([
     import("./lib/account-ui.js"),
     import("./lib/leaderboard-ui.js"),
@@ -151,12 +158,10 @@ document.addEventListener("keydown", (event) => {
 wireBuildInfoCopy();
 document.querySelector("#build-info").textContent = VERSION;
 
-// Menu chrome works immediately; auth CDN + version hash load after first paint.
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
+// After first paint: quietly warm auth + version hash so menu/login never hitch.
+window.addEventListener("load", () => {
+  scheduleIdle(() => {
     void loadAuthFeatures();
-    scheduleIdle(() => {
-      void renderBuildInfo();
-    });
+    void renderBuildInfo();
   });
 });

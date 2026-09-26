@@ -307,6 +307,41 @@ a.game-link:focus-visible {
   background: rgb(0 0 0 / 14%);
 }
 
+.gg-menu-auth {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.gg-menu-auth .gg-login-btn {
+  color: #fff;
+  background: var(--felt);
+  border-color: var(--felt-dark);
+}
+
+.gg-menu-auth .gg-logout-btn {
+  color: #fff;
+  background: var(--red);
+  border-color: #8f2430;
+}
+
+.gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-logout-btn[hidden] {
+  display: none;
+}
+
+.gg-screen-name {
+  margin: 0 0 8px;
+  color: rgb(0 0 0 / 55%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.gg-screen-name[hidden] {
+  display: none;
+}
+
 .menu-drawer .dialog-heading {
   display: flex;
   align-items: center;
