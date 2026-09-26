@@ -1,6 +1,3 @@
-import { mountAccountUi } from "./lib/account-ui.js";
-import { createLeaderboardUi } from "./lib/leaderboard-ui.js";
-
 const VERSION = "v2.0";
 /** Fixed repo — pathname is not reliable on the custom domain (site root). */
 const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
@@ -8,6 +5,27 @@ const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
 const menu = document.querySelector("#menu-drawer");
 const menuBackdrop = document.querySelector("#menu-backdrop");
 const menuButton = document.querySelector("#menu-button");
+
+let account = null;
+let leaderboard = null;
+let authFeaturesPromise = null;
+
+function loadAuthFeatures() {
+  if (authFeaturesPromise) return authFeaturesPromise;
+  authFeaturesPromise = Promise.all([
+    import("./lib/account-ui.js"),
+    import("./lib/leaderboard-ui.js"),
+  ]).then(([accountUi, leaderboardUi]) => {
+    leaderboard = leaderboardUi.createLeaderboardUi({ defaultSort: "wins" });
+    account = accountUi.mountAccountUi({
+      loginButton: document.querySelector("#menu-login"),
+      logoutButton: document.querySelector("#menu-logout"),
+      screenNameEl: document.querySelector("[data-gg-screen-name]"),
+    });
+    return { account, leaderboard };
+  });
+  return authFeaturesPromise;
+}
 
 function openMenu() {
   menu.classList.add("is-open");
@@ -21,6 +39,14 @@ function closeMenu() {
   menu.setAttribute("aria-hidden", "true");
   menuBackdrop.hidden = true;
   menuButton.setAttribute("aria-expanded", "false");
+}
+
+function scheduleIdle(callback) {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(callback, { timeout: 4000 });
+  } else {
+    window.setTimeout(callback, 1);
+  }
 }
 
 async function copyBuildInfo() {
@@ -107,13 +133,6 @@ async function renderBuildInfo() {
   }
 }
 
-const leaderboard = createLeaderboardUi({ defaultSort: "wins" });
-const account = mountAccountUi({
-  loginButton: document.querySelector("#menu-login"),
-  logoutButton: document.querySelector("#menu-logout"),
-  screenNameEl: document.querySelector("[data-gg-screen-name]"),
-});
-
 menuButton.addEventListener("click", openMenu);
 document.querySelector("#close-menu").addEventListener("click", closeMenu);
 menuBackdrop.addEventListener("click", closeMenu);
@@ -121,7 +140,7 @@ document.querySelector("#menu-login").addEventListener("click", closeMenu);
 document.querySelector("#menu-logout").addEventListener("click", closeMenu);
 document.querySelector("#show-leaderboard").addEventListener("click", () => {
   closeMenu();
-  leaderboard.open();
+  void loadAuthFeatures().then(({ leaderboard: board }) => board.open());
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && menu.classList.contains("is-open")) {
@@ -130,4 +149,14 @@ document.addEventListener("keydown", (event) => {
 });
 
 wireBuildInfoCopy();
-renderBuildInfo();
+document.querySelector("#build-info").textContent = VERSION;
+
+// Menu chrome works immediately; auth CDN + version hash load after first paint.
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    void loadAuthFeatures();
+    scheduleIdle(() => {
+      void renderBuildInfo();
+    });
+  });
+});

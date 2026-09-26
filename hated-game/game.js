@@ -1,11 +1,3 @@
-import { mountAccountUi } from "../lib/account-ui.js";
-import { createLeaderboardUi } from "../lib/leaderboard-ui.js";
-import {
-  getSession,
-  hatedGameResultPayload,
-  insertGameResult,
-} from "../lib/supabase.js";
-
 (() => {
   "use strict";
 
@@ -68,15 +60,33 @@ import {
   let dealResultId = crypto.randomUUID();
   let dealResultSubmitted = false;
 
-  const leaderboard = createLeaderboardUi({
-    gameSlug: "hated-game",
-    defaultSort: "wins",
-  });
-  const account = mountAccountUi({
-    loginButton: document.querySelector("#menu-login"),
-    logoutButton: document.querySelector("#menu-logout"),
-    screenNameEl: document.querySelector("[data-gg-screen-name]"),
-  });
+  /** Auth/leaderboard load after first paint so the board isn't blocked on the CDN. */
+  let account = null;
+  let leaderboard = null;
+  let supabaseApi = null;
+  let authFeaturesPromise = null;
+
+  function loadAuthFeatures() {
+    if (authFeaturesPromise) return authFeaturesPromise;
+    authFeaturesPromise = Promise.all([
+      import("../lib/account-ui.js"),
+      import("../lib/leaderboard-ui.js"),
+      import("../lib/supabase.js"),
+    ]).then(([accountUi, leaderboardUi, supabase]) => {
+      supabaseApi = supabase;
+      leaderboard = leaderboardUi.createLeaderboardUi({
+        gameSlug: "hated-game",
+        defaultSort: "wins",
+      });
+      account = accountUi.mountAccountUi({
+        loginButton: document.querySelector("#menu-login"),
+        logoutButton: document.querySelector("#menu-logout"),
+        screenNameEl: document.querySelector("[data-gg-screen-name]"),
+      });
+      return { account, leaderboard, supabase };
+    });
+    return authFeaturesPromise;
+  }
 
   function loadOptions() {
     try {
@@ -197,14 +207,19 @@ import {
 
   async function submitDealOutcome(outcome) {
     if (dealResultSubmitted) return;
+    try {
+      await loadAuthFeatures();
+    } catch {
+      return;
+    }
     const {
       data: { session },
-    } = await getSession();
+    } = await supabaseApi.getSession();
     if (!session) return;
 
     dealResultSubmitted = true;
     persistGame();
-    const payload = hatedGameResultPayload(
+    const payload = supabaseApi.hatedGameResultPayload(
       {
         winDeclared: outcome === "win" || state.winDeclared,
         gameOver: outcome,
@@ -213,7 +228,7 @@ import {
       dealResultId,
     );
     try {
-      const { error } = await insertGameResult(payload);
+      const { error } = await supabaseApi.insertGameResult(payload);
       if (error) {
         dealResultSubmitted = false;
         persistGame();
@@ -807,12 +822,20 @@ import {
     elements.keepPlaying.textContent = won ? "Return to board" : "View board";
     elements.keepPlaying.hidden = false;
 
-    const {
-      data: { session },
-    } = await getSession();
-    const showLoginCta = won && !session;
-    if (elements.resultLoginPrompt) {
+    let showLoginCta = false;
+    if (won && elements.resultLoginPrompt) {
+      try {
+        await loadAuthFeatures();
+        const {
+          data: { session },
+        } = await supabaseApi.getSession();
+        showLoginCta = !session;
+      } catch {
+        showLoginCta = true;
+      }
       elements.resultLoginPrompt.hidden = !showLoginCta;
+    } else if (elements.resultLoginPrompt) {
+      elements.resultLoginPrompt.hidden = true;
     }
 
     openDialog(elements.result);
@@ -921,6 +944,14 @@ import {
       );
     } catch {
       // The version remains available when offline or if GitHub is unavailable.
+    }
+  }
+
+  function scheduleIdle(callback) {
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(callback, { timeout: 4000 });
+    } else {
+      window.setTimeout(callback, 1);
     }
   }
 
@@ -1449,7 +1480,9 @@ import {
   });
   document.querySelector("#show-leaderboard").addEventListener("click", () => {
     closeMenu();
-    leaderboard.open({ gameSlug: "hated-game" });
+    void loadAuthFeatures().then(({ leaderboard: board }) => {
+      board.open({ gameSlug: "hated-game" });
+    });
   });
   document.querySelector("#close-options").addEventListener("click", () => closeDialog(elements.options));
   document.querySelector("#options-done").addEventListener("click", () => closeDialog(elements.options));
@@ -1497,7 +1530,7 @@ import {
   elements.keepPlaying.addEventListener("click", () => closeDialog(elements.result));
   elements.resultLogin?.addEventListener("click", () => {
     closeDialog(elements.result);
-    account.openLogin();
+    void loadAuthFeatures().then(({ account: auth }) => auth.openLogin());
   });
 
   let allowUnload = false;
@@ -1513,7 +1546,8 @@ import {
     allowUnload = true;
     window.location.assign(new URL("../", window.location.href).href);
   });
-  renderBuildInfo();
+
+  // Deal / restore immediately — do not wait on auth CDN or GitHub version hash.
   applyDeckPosition();
   const queryParams = new URLSearchParams(window.location.search);
   if (queryParams.has("stacked")) {
@@ -1522,4 +1556,14 @@ import {
     startNewGame();
     buildStackedTestPile();
   } else if (!restoreSavedGame()) startNewGame();
+
+  // After first paint: warm auth modules, then lazily fill the version hash.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      void loadAuthFeatures();
+      scheduleIdle(() => {
+        void renderBuildInfo();
+      });
+    });
+  });
 })();
