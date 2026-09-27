@@ -1,0 +1,37 @@
+---
+description: App release version vs service worker CACHE_NAME — keep them separate
+globs: sw.js,hated-game/sw.js,app.js,hated-game/game.js,index.html,hated-game/index.html
+alwaysApply: false
+---
+
+# App version vs service worker cache
+
+These are **unrelated** version tracks. Do not bump them together by default.
+
+## App release version (e.g. v2.2)
+
+User-visible release label and asset cache-busting for normal HTTP loads.
+
+Update together when shipping a labeled release:
+
+- `app.js` — `VERSION` constant
+- `hated-game/game.js` — `VERSION` constant
+- `index.html` / `hated-game/index.html` — footer build label
+- `?v=` query strings on stylesheets (e.g. `styles.css?v=…`, `guygames-ui.css?v=…`)
+- `sw.js` **only** the precached URL strings that include `?v=` (must match HTML), **not** `CACHE_NAME`
+
+## Service worker `CACHE_NAME`
+
+Controls when the browser **drops the old offline precache bucket** and installs a fresh one (`sw.js` / `hated-game/sw.js`).
+
+- **Independent** naming (e.g. `solitaire-picker-v2`, `hated-game-v2`) — not tied to app `v2.2`.
+- **Bump only** when you intentionally need a hard SW cache reset (wrong/stale precached shell, changed precache strategy or `ASSETS` list in a way that leaves clients stuck).
+- **Do not bump** for routine app changes (auth, UI, lib code, footer version bumps) — picker SW is network-first for `.js`/`.html`/`.css`, and `lib/*` is loaded via dynamic `import()`, so online users pick up changes on the next visit without renaming `CACHE_NAME`.
+
+## Quick check
+
+| Change | Bump app `VERSION` / `?v=` | Bump `CACHE_NAME` |
+|--------|---------------------------|-------------------|
+| Auth, leaderboard, account UI in `lib/` | Optional (if releasing) | No |
+| Footer / display version | Yes | No |
+| Fix broken offline precache | Maybe | Yes |

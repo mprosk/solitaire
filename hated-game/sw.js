@@ -1,4 +1,4 @@
-const CACHE_NAME = "hated-game-v2.0.1";
+const CACHE_NAME = "hated-game-v2";
 const ASSETS = [
   "./",
   "./index.html",

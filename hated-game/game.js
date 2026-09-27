@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v2.1";
+  const VERSION = "v2.2";
   /** Fixed repo — pathname is not reliable on the custom domain (site root). */
   const GITHUB_REPO = { owner: "mprosk", name: "solitaire" };
   const STORAGE_KEY = "hated-game:save-v1";
@@ -71,7 +71,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.1";
+    link.href = "../lib/guygames-ui.css?v=2.2";
     document.head.append(link);
   }
 
