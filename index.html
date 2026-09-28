@@ -2,6 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- frame-ancestors / HSTS can't go in a meta tag; Cloudflare sets those headers. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://oxcrkikwjushtszpdigq.supabase.co wss://oxcrkikwjushtszpdigq.supabase.co; frame-src https://challenges.cloudflare.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#123d2c" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -173,18 +178,6 @@
     </aside>
 
     <script type="module" src="app.js"></script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          const register = () =>
-            navigator.serviceWorker.register("./sw.js").catch(() => {});
-          if (typeof window.requestIdleCallback === "function") {
-            window.requestIdleCallback(register, { timeout: 4000 });
-          } else {
-            window.setTimeout(register, 1);
-          }
-        });
-      }
-    </script>
+    <script src="sw-register.js" defer></script>
   </body>
 </html>
