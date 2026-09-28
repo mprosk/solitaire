@@ -158,6 +158,12 @@ document.addEventListener("keydown", (event) => {
 wireBuildInfoCopy();
 document.querySelector("#build-info").textContent = VERSION;
 
+// Magic links land here with the session in the URL hash. Load auth right away so
+// supabase-js stores it before the player can tap into a game and drop the hash.
+if (/[#&](access_token|error_description)=/.test(window.location.hash)) {
+  void loadAuthFeatures();
+}
+
 // After first paint: quietly warm auth + version hash so menu/login never hitch.
 window.addEventListener("load", () => {
   scheduleIdle(() => {
