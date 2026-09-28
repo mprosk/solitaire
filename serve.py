@@ -1,27 +1,132 @@
 #!/usr/bin/env python3
-"""Minimal local static host for the solitaire monorepo."""
+"""Local static server for the whole site (picker + games), reachable on the LAN.
+
+    python3 serve.py            # http://<lan-ip>:8888/
+    python3 serve.py --https    # needed for a real home-screen install on a phone
+"""
 
 from __future__ import annotations
 
+import argparse
+import http.server
 import mimetypes
+import socket
+import ssl
+import sys
+import urllib.parse
 from pathlib import Path
 
-from flask import Flask, send_from_directory
-
 ROOT = Path(__file__).resolve().parent
-app = Flask(__name__)
+CERT = ROOT / "certs" / "cert.pem"
+KEY = ROOT / "certs" / "key.pem"
 
+# Ensure correct types even when the OS mime database is incomplete.
 mimetypes.add_type("application/manifest+json", ".webmanifest")
 mimetypes.add_type("application/javascript", ".js")
 
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def host(path: str):
-    if not path or path.endswith("/") or (ROOT / path).is_dir():
-        path = f"{path.rstrip('/')}/index.html" if path else "index.html"
-    return send_from_directory(ROOT, path)
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=str(ROOT), **kwargs)
+
+    def send_head(self):
+        # LAN-visible, so never hand out .env, .git/, or other dotfiles.
+        parts = urllib.parse.unquote(self.path.split("?", 1)[0]).split("/")
+        if any(part.startswith(".") and part not in ("", ".well-known") for part in parts):
+            self.send_error(404)
+            return None
+        return super().send_head()
+
+    def list_directory(self, path):
+        self.send_error(404)
+        return None
+
+    def end_headers(self):
+        # Dev ergonomics: never let the browser HTTP-cache game assets, so a
+        # plain reload always picks up fresh CSS/JS (the service worker cache
+        # is a separate layer — see ?sw=off in hated-game/index.html).
+        if self.path.split("?")[0].lower().endswith(
+            (".html", ".css", ".js", ".webmanifest")
+        ):
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
+    def guess_type(self, path):
+        # Prefer our forced mappings over whatever guess_type returns.
+        lower = path.lower()
+        if lower.endswith(".webmanifest"):
+            return "application/manifest+json"
+        if lower.endswith(".js"):
+            return "application/javascript"
+        return super().guess_type(path)
+
+
+def lan_ip() -> str:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        sock.close()
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Serve GuyGames for local / phone PWA testing.")
+    parser.add_argument("port", nargs="?", type=int, default=8888, help="Port (default: 8888)")
+    parser.add_argument(
+        "--https",
+        action="store_true",
+        help=f"Serve HTTPS using {CERT.relative_to(ROOT)} and {KEY.relative_to(ROOT)}",
+    )
+    args = parser.parse_args()
+
+    scheme = "http"
+    server = http.server.ThreadingHTTPServer(("0.0.0.0", args.port), Handler)
+
+    if args.https:
+        if not CERT.is_file() or not KEY.is_file():
+            print(
+                "HTTPS requested but certs are missing.\n"
+                f"  Expected: {CERT}\n"
+                f"            {KEY}\n"
+                "Generate a self-signed cert, then re-run with --https:\n"
+                "  mkdir -p certs\n"
+                '  openssl req -x509 -newkey rsa:2048 -nodes -keyout certs/key.pem '
+                '-out certs/cert.pem -days 365 -subj "/CN=localhost"',
+                file=sys.stderr,
+            )
+            return 1
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(certfile=str(CERT), keyfile=str(KEY))
+        server.socket = ctx.wrap_socket(server.socket, server_side=True)
+        scheme = "https"
+
+    host = lan_ip()
+    print(f"Serving {ROOT}")
+    print(f"  Local:  {scheme}://127.0.0.1:{args.port}/")
+    print(f"  LAN:    {scheme}://{host}:{args.port}/")
+    print()
+    if scheme == "http":
+        print(
+            "Note: Phone standalone install (no address bar) needs a secure context (HTTPS).\n"
+            "  HTTP over LAN only creates a home-screen shortcut, not a real PWA install.\n"
+            "  Options: run with --https (self-signed certs in certs/), or use a tunnel\n"
+            "  (localtunnel / cloudflared) and Add to Home Screen from the https URL."
+        )
+    else:
+        print(
+            "Serving HTTPS. Accept the certificate warning on your phone if using a self-signed cert.\n"
+            "  Then Add to Home Screen / Install from this https URL for standalone mode."
+        )
+    print("Ctrl+C to stop.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopped.")
+    return 0
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8888, debug=True)
+    raise SystemExit(main())
