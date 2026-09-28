@@ -268,8 +268,11 @@
 
   function requestNewGame() {
     if (isActiveDeal()) {
+      const signedIn = Boolean(account?.getState().user);
       const ok = window.confirm(
-        "Forfeit this game? It will be counted as a game loss on the leaderboard.",
+        signedIn
+          ? "Forfeit this game? It will be counted as a game loss on the leaderboard."
+          : "Start a new game? This deal will be lost.",
       );
       if (!ok) return;
       void submitDealOutcome("forfeit").finally(() => startNewGame());
