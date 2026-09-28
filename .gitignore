@@ -3,3 +3,5 @@
 __pycache__/
 .venv/
 certs/
+build.json
+_site/
