@@ -59,6 +59,8 @@
   let options = loadOptions();
   let dealResultId = crypto.randomUUID();
   let dealResultSubmitted = false;
+  /** client_result_id with an insert in flight, so auth events don't double-submit. */
+  let submittingResultId = null;
 
   /** Auth/leaderboard load on demand so the first paint isn't fighting the CDN. */
   let account = null;
@@ -92,6 +94,9 @@
         loginButton: document.querySelector("#menu-login"),
         logoutButton: document.querySelector("#menu-logout"),
         screenNameEl: document.querySelector("[data-gg-screen-name]"),
+        onAuthChange: ({ user }) => {
+          if (user) submitPendingWin();
+        },
       });
       return { account, leaderboard, supabase };
     });
@@ -215,45 +220,52 @@
     return Boolean(state && !state.gameOver && !state.winDeclared);
   }
 
+  /** @param {"win" | "loss" | "forfeit"} outcome */
+  function dealResultPayload(outcome, clientResultId) {
+    return {
+      game_slug: "hated-game",
+      outcome,
+      // Early wins leave cards out of the up piles but still count as a full clear.
+      score: outcome === "win" ? 52 : score(),
+      extra: {},
+      client_result_id: clientResultId,
+    };
+  }
+
+  /**
+   * Record this deal's result for a signed-in player. Signed-out results are dropped;
+   * a declared win stays in `state` so signing in right after can still credit it.
+   * @param {"win" | "loss" | "forfeit"} outcome
+   */
   async function submitDealOutcome(outcome) {
-    if (dealResultSubmitted) return;
+    if (dealResultSubmitted || state.devDeal) return;
+    // Capture before awaiting: "New game" can replace the deal while auth loads.
+    const clientResultId = dealResultId;
+    if (submittingResultId === clientResultId) return;
+    const payload = dealResultPayload(outcome, clientResultId);
+
+    submittingResultId = clientResultId;
     try {
       await loadAuthFeatures();
-    } catch {
-      return;
-    }
-    const payload = supabaseApi.hatedGameResultPayload(
-      {
-        winDeclared: outcome === "win" || state.winDeclared,
-        gameOver: outcome,
-        score: score(),
-      },
-      dealResultId,
-    );
-
-    const {
-      data: { session },
-    } = await supabaseApi.getSession();
-    if (!session) {
-      // Keep the win (etc.) for after magic-link / account creation.
-      supabaseApi.queuePendingGameResult(payload);
-      return;
-    }
-
-    dealResultSubmitted = true;
-    persistGame();
-    try {
+      const {
+        data: { session },
+      } = await supabaseApi.getSession();
+      if (!session) return;
       const { error } = await supabaseApi.insertGameResult(payload);
-      if (error) {
-        dealResultSubmitted = false;
-        supabaseApi.queuePendingGameResult(payload);
+      if (!error && clientResultId === dealResultId) {
+        dealResultSubmitted = true;
         persistGame();
       }
     } catch {
-      dealResultSubmitted = false;
-      supabaseApi.queuePendingGameResult(payload);
-      persistGame();
+      // Offline or auth failed; a pending win retries on the next sign-in event.
+    } finally {
+      if (submittingResultId === clientResultId) submittingResultId = null;
     }
+  }
+
+  /** Called on auth changes: credit a win the player earned before signing in. */
+  function submitPendingWin() {
+    if (state?.winDeclared && !dealResultSubmitted) void submitDealOutcome("win");
   }
 
   function requestNewGame() {
@@ -1561,7 +1573,7 @@
   elements.keepPlaying.addEventListener("click", () => closeDialog(elements.result));
   elements.resultLogin?.addEventListener("click", () => {
     closeDialog(elements.result);
-    void loadAuthFeatures().then(({ account: auth }) => auth.openLogin());
+    void loadAuthFeatures().then(({ account: auth }) => auth.openLogin({ title: "Create account" }));
   });
 
   let allowUnload = false;
@@ -1585,6 +1597,9 @@
     // Deterministic visual-test deal; bypasses the session restore so every
     // reload lands on the same testable board.
     startNewGame();
+    // Never send dev deals to the leaderboard (flag survives restart + restore).
+    state.devDeal = true;
+    originalDeal.devDeal = true;
     buildStackedTestPile();
   } else if (!restoreSavedGame()) startNewGame();
 
