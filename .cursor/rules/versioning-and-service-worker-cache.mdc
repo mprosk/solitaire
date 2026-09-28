@@ -26,7 +26,7 @@ Controls when the browser **drops the old offline precache bucket** and installs
 
 - **Independent** naming (e.g. `solitaire-picker-v2`, `hated-game-v2`) — not tied to app `v2.2`.
 - **Bump only** when you intentionally need a hard SW cache reset (wrong/stale precached shell, changed precache strategy or `ASSETS` list in a way that leaves clients stuck).
-- **Do not bump** for routine app changes (auth, UI, lib code, footer version bumps) — picker SW is network-first for `.js`/`.html`/`.css`, and `lib/*` is loaded via dynamic `import()`, so online users pick up changes on the next visit without renaming `CACHE_NAME`.
+- **Do not bump** for routine app changes (auth, UI, lib code, footer version bumps) — both SWs are network-first for `.js`/`.html`/`.css`/`.json` and skip cross-origin requests, so online users pick up changes on the next visit without renaming `CACHE_NAME`.
 
 ## Quick check
 

@@ -22,10 +22,9 @@ Dev URL:
 http://127.0.0.1:8888/hated-game/?sw=off&stacked=1
 ```
 
-- `?sw=off` unregisters the cache-first service worker on your browser and remembers
-  the opt-out, so plain reloads always show fresh CSS/JS. (Without this, the worker
-  serves stale assets no matter how hard you reload — restarting the server does not
-  clear it.) `?sw=on` re-enables.
+- `?sw=off` unregisters the service worker on your browser and remembers the opt-out.
+  The worker is network-first for HTML/CSS/JS, so this is mostly for ruling it out
+  while debugging caching. `?sw=on` re-enables.
 - `?stacked=1` deals a deterministic board with a legal 3-card stack on pile 3 and
   bypasses the session restore, so every reload lands on a board you can drag-test
   immediately — no re-dealing for a lucky hand. Stacked deals never post results to

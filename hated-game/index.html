@@ -216,9 +216,9 @@
     <script>
       // Service worker: keep it for installs/offline, but let devs opt out.
       // Visit ?sw=off once to unregister + skip registration on this browser
-      // (remembered in localStorage); ?sw=on re-enables. Without this, the
-      // cache-first worker keeps serving stale CSS/JS no matter how hard you
-      // reload, which makes visual iteration miserable.
+      // (remembered in localStorage); ?sw=on re-enables. The worker is
+      // network-first for HTML/CSS/JS, but opting out still rules it out
+      // when chasing a caching bug.
       if ("serviceWorker" in navigator) {
         const registerSw = () => {
           const params = new URLSearchParams(window.location.search);
