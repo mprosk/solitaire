@@ -1,8 +1,8 @@
 # Dashboard setup
 
 Changes to make outside the repo in GitHub, Supabase, Cloudflare, and Resend. The code for
-each item is already in the repo. Order matters in two places, so follow the rollout
-section first.
+each item is already in the repo. Order matters for the rollout, so do that section
+first.
 
 ## Rollout order
 
@@ -17,8 +17,6 @@ them. Ship both in one sitting:
 Between steps 2 and 3 the live leaderboard shows "Could not load leaderboard." Nothing is
 lost. It recovers once the new code loads. Service workers are network-first, so online
 users get it on their next visit.
-
-Turnstile is the other ordering trap. See the Cloudflare section.
 
 ## GitHub
 
@@ -89,25 +87,13 @@ Turnstile is the other ordering trap. See the Cloudflare section.
 - [ ] Authentication → Sessions: leave "Time-box user sessions" and "Inactivity timeout"
       off unless you want forced logouts. Keep the refresh token reuse interval at the
       default 10 s.
-- [ ] Attack Protection → CAPTCHA: see the Turnstile steps under Cloudflare. **Do not
-      turn this on before the client has the site key**, or every sign-in fails.
+- [ ] Attack Protection → CAPTCHA: leave **off**. The client sends no CAPTCHA token, so
+      turning it on makes every sign-in fail. The email rate limit above is the abuse brake.
 - [ ] Emails → SMTP Settings: confirm it points at Resend (`smtp.resend.com`, port 465,
       user `resend`, password = the Resend API key) and the sender is on your verified
       domain.
 
 ## Cloudflare
-
-### Turnstile (CAPTCHA on sign-in)
-
-1. [ ] Turnstile → Add widget. Hostnames: `guygames.net` (add `localhost` if you want it
-       on dev builds). Mode: Managed. Copy the site key and the secret key.
-2. [ ] Put the site key in `TURNSTILE_SITE_KEY` at the top of `lib/account-ui.js`, push,
-       and confirm the widget appears in the login dialog on the live site.
-3. [ ] Only then: Supabase → Authentication → Attack Protection → CAPTCHA → provider
-       Turnstile, paste the **secret** key, save.
-4. [ ] Sign in once end to end to confirm.
-
-To undo, turn CAPTCHA off in Supabase first, then clear the key.
 
 ### Security headers
 

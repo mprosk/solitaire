@@ -87,16 +87,6 @@
   line-height: 1.4;
 }
 
-/* Turnstile widget is 300×65; reserve the space so the form doesn't jump. */
-.gg-captcha {
-  min-height: 65px;
-  margin: 0 0 12px;
-}
-
-.gg-captcha[hidden] {
-  display: none;
-}
-
 .gg-login-sent[hidden] {
   display: none;
 }
