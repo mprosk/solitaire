@@ -30,14 +30,15 @@ jobs:
         run: |
           mkdir _site
           # Ship only what the browser needs; dev tooling and migrations stay in the repo.
+          # Leading "/" anchors to the repo root; a bare name would also drop lib/vendor/supabase.
           rsync -a \
             --exclude '.*' \
-            --exclude '_site' \
-            --exclude 'supabase' \
-            --exclude 'scripts' \
-            --exclude 'serve.py' \
+            --exclude '/_site' \
+            --exclude '/supabase' \
+            --exclude '/scripts' \
+            --exclude '/serve.py' \
             --exclude '*.md' \
-            --exclude 'LICENSE' \
+            --exclude '/LICENSE' \
             ./ _site/
           printf '{"sha":"%s"}\n' "$GITHUB_SHA" > _site/build.json
 
