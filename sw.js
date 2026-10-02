@@ -3,7 +3,7 @@ const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=2.2",
+  "./styles.css?v=2.3",
   "./app.js",
   "./sw-register.js",
   "./manifest.webmanifest",
