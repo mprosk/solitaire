@@ -1,4 +1,4 @@
-const VERSION = "v2.3";
+const VERSION = "v2.4";
 
 const menu = document.querySelector("#menu-drawer");
 const menuBackdrop = document.querySelector("#menu-backdrop");
@@ -14,7 +14,7 @@ function loadAuthFeatures() {
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "lib/guygames-ui.css?v=2.3";
+    link.href = "lib/guygames-ui.css?v=2.4";
     document.head.append(link);
   }
   authFeaturesPromise = Promise.all([
@@ -61,7 +61,10 @@ document.querySelector("#menu-login").addEventListener("click", closeMenu);
 document.querySelector("#menu-logout").addEventListener("click", closeMenu);
 document.querySelector("#show-leaderboard").addEventListener("click", () => {
   closeMenu();
-  void loadAuthFeatures().then(({ leaderboard: board }) => board.open());
+  // Open on the game the player came back from, if any.
+  void Promise.all([loadAuthFeatures(), import("./lib/games.js")]).then(
+    ([{ leaderboard: board }, { lastGameSlug }]) => board.open({ gameSlug: lastGameSlug() }),
+  );
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && menu.classList.contains("is-open")) {

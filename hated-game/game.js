@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v2.3";
+  const VERSION = "v2.4";
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
   const DECK_POSITIONS = ["upper-left", "upper-right", "lower-left", "lower-right"];
@@ -71,7 +71,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.3";
+    link.href = "../lib/guygames-ui.css?v=2.4";
     document.head.append(link);
   }
 
@@ -1505,6 +1505,13 @@
     allowUnload = true;
     window.location.assign(new URL("../", window.location.href).href);
   });
+
+  // Lets the picker's leaderboard open on this game (key: LAST_GAME_KEY in lib/games.js).
+  try {
+    window.sessionStorage.setItem("guygames:last-game", "hated-game");
+  } catch {
+    // The picker falls back to its first game.
+  }
 
   // Deal / restore immediately — do not wait on auth CDN or GitHub version hash.
   applyDeckPosition();

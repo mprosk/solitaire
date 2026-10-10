@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
+      <rect width="24" height="42" fill="#173e78"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#315b98"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#315b98"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#315b98"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#315b98"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#4a74b3"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#4a74b3"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <g id="card">
+      <rect width="150" height="210" rx="13" ry="13" fill="#f3e9d5"/>
+      <rect x="8" y="8" width="134" height="194" rx="9" ry="9"
+            fill="url(#cardBack)" stroke="#173e78" stroke-width="3"/>
+    </g>
+  </defs>
+
+  <!-- Felt background -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!--
+    Four equally sized face-down cards (150 x 210) in a 2x2 grid with a 16px
+    gutter, centered as a group at (256, 256).
+  -->
+  <use href="#card" x="98" y="38" filter="url(#shadow)"/>
+  <use href="#card" x="264" y="38" filter="url(#shadow)"/>
+  <use href="#card" x="98" y="264" filter="url(#shadow)"/>
+  <use href="#card" x="264" y="264" filter="url(#shadow)"/>
+</svg>

@@ -20,10 +20,13 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <link rel="stylesheet" href="styles.css?v=2.3" />
+    <link rel="stylesheet" href="styles.css?v=2.4" />
     <link rel="prefetch" href="./hated-game/" as="document" />
     <link rel="prefetch" href="./hated-game/game.js" as="script" />
     <link rel="prefetch" href="./hated-game/styles.css" as="style" />
+    <link rel="prefetch" href="./larrys-game/" as="document" />
+    <link rel="prefetch" href="./larrys-game/game.js" as="script" />
+    <link rel="prefetch" href="./larrys-game/styles.css" as="style" />
     <style>
       /* Critical layout inlined so a stale SW can't leave bare blue links. */
       .game-list {
@@ -125,11 +128,19 @@
           </span>
           <span class="game-meta">Play</span>
         </a>
-        <div class="game-link is-disabled" aria-disabled="true">
+        <a class="game-link" href="./larrys-game/">
           <span class="game-main">
-            <span class="game-name">Larry’s Game — <em>Coming Soon!</em></span>
+            <img
+              class="game-icon"
+              src="./larrys-game/icons/icon-source.svg"
+              alt=""
+              width="48"
+              height="48"
+            />
+            <span class="game-name">Larry’s Game</span>
           </span>
-        </div>
+          <span class="game-meta">Play</span>
+        </a>
         <div class="game-link is-disabled" aria-disabled="true">
           <span class="game-main">
             <span class="game-name">Aunt Ella’s Cross — <em>Coming Soon!</em></span>
@@ -156,7 +167,7 @@
       title="Copy version"
       role="button"
       tabindex="0"
-    >v2.3</footer>
+    >v2.4</footer>
 
     <div id="menu-backdrop" class="menu-backdrop" hidden></div>
     <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Menu">
