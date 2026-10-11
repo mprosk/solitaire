@@ -207,6 +207,16 @@ a.game-link:focus-visible {
   font-weight: 600;
 }
 
+.game-link .game-text {
+  display: grid;
+  gap: 2px;
+}
+
+.game-link .game-note {
+  color: var(--felt-dark);
+  font-size: 0.9rem;
+}
+
 .game-link .game-meta {
   color: var(--felt-dark);
   font-family: ui-sans-serif, system-ui, sans-serif;
