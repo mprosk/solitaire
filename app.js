@@ -1,4 +1,4 @@
-const VERSION = "v2.4";
+const VERSION = "v2.5";
 
 const menu = document.querySelector("#menu-drawer");
 const menuBackdrop = document.querySelector("#menu-backdrop");
@@ -14,7 +14,7 @@ function loadAuthFeatures() {
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "lib/guygames-ui.css?v=2.4";
+    link.href = "lib/guygames-ui.css?v=2.5";
     document.head.append(link);
   }
   authFeaturesPromise = Promise.all([
