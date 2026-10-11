@@ -2,13 +2,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
-      <rect width="24" height="42" fill="#173e78"/>
-      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#315b98"/>
-      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#315b98"/>
-      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#315b98"/>
-      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#315b98"/>
-      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#4a74b3"/>
-      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#4a74b3"/>
+      <rect width="24" height="42" fill="#7a1622"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#a3323f"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#a3323f"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#a3323f"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#a3323f"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#c4535f"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#c4535f"/>
     </pattern>
     <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
       <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
@@ -16,7 +16,7 @@
     <g id="card">
       <rect width="150" height="210" rx="13" ry="13" fill="#f3e9d5"/>
       <rect x="8" y="8" width="134" height="194" rx="9" ry="9"
-            fill="url(#cardBack)" stroke="#173e78" stroke-width="3"/>
+            fill="url(#cardBack)" stroke="#7a1622" stroke-width="3"/>
     </g>
   </defs>
 
