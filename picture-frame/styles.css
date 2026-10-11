@@ -1,0 +1,800 @@
+:root {
+  color-scheme: light;
+  --felt: #18563d;
+  --felt-dark: #103d2c;
+  --felt-light: #216d4e;
+  --cream: #f7f1e5;
+  --ink: #19201d;
+  --red: #b92f3d;
+  --gold: #e8c46b;
+  /* Board height in card heights (deck row + four grid rows) and in fixed chrome. */
+  --height-units: 7.6;
+  --chrome-height: 190px;
+  --topbar-height: 64px;
+  --topbar-inline: clamp(12px, 3vw, 28px);
+  --menu-button-size: 42px;
+  --menu-drawer-inline: 18px;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* Redeclared on main: custom properties resolve where declared, so main's
+   lower-deck budget would otherwise never reach the derived sizes. */
+:root,
+main {
+  /* Four cards across, five card rows down (the deck row plus the grid). */
+  --card-width: clamp(
+    44px,
+    min(20vw, calc((100svh - var(--chrome-height)) / var(--height-units))),
+    116px
+  );
+  --card-height: calc(var(--card-width) * 1.4);
+  --corner-font-size: clamp(0.78rem, calc(var(--card-width) * 0.2), 1.9rem);
+  --grid-gap: clamp(6px, 1.6vw, 14px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100svh;
+  margin: 0;
+  color: white;
+  background:
+    radial-gradient(circle at 50% -10%, var(--felt-light), transparent 52%),
+    var(--felt);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.topbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  min-height: var(--topbar-height);
+  padding: 8px var(--topbar-inline);
+  background: rgb(8 37 26 / 58%);
+  border-bottom: 1px solid rgb(255 255 255 / 12%);
+  box-shadow: 0 2px 15px rgb(0 0 0 / 15%);
+}
+
+h1 {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.icon-button {
+  display: grid;
+  width: var(--menu-button-size);
+  height: var(--menu-button-size);
+  padding: 0;
+  color: white;
+  font-size: 1.65rem;
+  line-height: 1;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.menu-glyph {
+  position: relative;
+  display: block;
+  width: 21px;
+  height: 14px;
+}
+
+.menu-glyph i {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.menu-glyph i:nth-child(1) {
+  top: 0;
+}
+
+.menu-glyph i:nth-child(2) {
+  top: 6px;
+}
+
+.menu-glyph i:nth-child(3) {
+  top: 12px;
+}
+
+.icon-button.dark {
+  color: var(--ink);
+}
+
+.icon-button.dark:hover {
+  background: rgb(0 0 0 / 7%);
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  justify-self: end;
+  gap: 5px;
+  min-height: 36px;
+  padding: 6px 12px;
+  color: rgb(255 255 255 / 70%);
+  font-size: 0.72rem;
+  line-height: 1;
+  white-space: nowrap;
+  background: rgb(255 255 255 / 9%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 999px;
+}
+
+.score > span:first-child {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.score strong {
+  color: white;
+  font-size: 1.08rem;
+  line-height: 1;
+}
+
+main {
+  display: grid;
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 28px);
+  /* As wide as the grid, so the deck lines up with its outer columns. */
+  grid-template-columns: calc(var(--card-width) * 4 + var(--grid-gap) * 3);
+  justify-content: center;
+  grid-template-areas:
+    "deck"
+    "grid"
+    "status"
+    "newgame";
+  align-items: start;
+}
+
+main[data-deck-position^="lower"] {
+  grid-template-areas:
+    "grid"
+    "status"
+    "deck"
+    "newgame";
+}
+
+.deck-group {
+  grid-area: deck;
+  display: flex;
+  gap: var(--grid-gap);
+  justify-self: start;
+  margin-bottom: clamp(16px, 4vw, 32px);
+}
+
+/* On the right, keep the revealed card on the inner side of the deck. */
+main[data-deck-position$="right"] .deck-group {
+  justify-self: end;
+  flex-direction: row-reverse;
+}
+
+main[data-deck-position^="lower"] .deck-group {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.frame-grid {
+  grid-area: grid;
+  display: grid;
+  grid-template-columns: repeat(4, var(--card-width));
+  gap: var(--grid-gap);
+  justify-content: center;
+}
+
+.card-slot,
+.playing-card {
+  position: relative;
+  display: block;
+  width: var(--card-width);
+  height: var(--card-height);
+  padding: 0;
+  border-radius: clamp(5px, 1.2vw, 9px);
+}
+
+.card-slot {
+  /* No border on the slot itself — a bordered box shrinks the content area and
+     top-left-pins the card, so a shorter ghost shares the top edge and leaves a
+     gap at the bottom. Helper chrome lives on an explicitly centered ::before. */
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.card-slot::before {
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--card-width) - 6px);
+  height: calc(var(--card-height) - 6px);
+  content: "";
+  background: rgb(0 0 0 / 9%);
+  border: 2px solid rgb(255 255 255 / 20%);
+  border-radius: clamp(4px, 1.1vw, 8px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.card-slot:has(> .playing-card)::before,
+.card-slot.card-back::before {
+  content: none;
+}
+
+.card-slot > .playing-card {
+  /* Full-size card, same box as the slot — shares the ghost's centerline. */
+  position: relative;
+  z-index: 1;
+}
+
+.playing-card {
+  overflow: hidden;
+  color: var(--ink);
+  background: linear-gradient(145deg, #fff 0%, var(--cream) 100%);
+  border: 1px solid rgb(0 0 0 / 18%);
+  box-shadow: 0 3px 7px rgb(0 0 0 / 24%);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.playing-card.red {
+  color: var(--red);
+}
+
+.playing-card .corner {
+  position: absolute;
+  top: 7%;
+  left: 10%;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.12em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: var(--corner-font-size);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.playing-card .suit-large {
+  position: absolute;
+  right: 9%;
+  bottom: 3%;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(var(--card-width) * 0.58);
+  line-height: 1;
+}
+
+.card-back {
+  background-color: #173e78;
+  background-image:
+    linear-gradient(30deg, #315b98 12%, transparent 12.5%, transparent 87%, #315b98 87.5%),
+    linear-gradient(150deg, #315b98 12%, transparent 12.5%, transparent 87%, #315b98 87.5%),
+    linear-gradient(30deg, #315b98 12%, transparent 12.5%, transparent 87%, #315b98 87.5%),
+    linear-gradient(150deg, #315b98 12%, transparent 12.5%, transparent 87%, #315b98 87.5%);
+  background-position:
+    0 0,
+    0 0,
+    12px 21px,
+    12px 21px;
+  background-size: 24px 42px;
+  border: 4px solid #f3e9d5;
+  box-shadow:
+    inset 0 0 0 2px #173e78,
+    0 3px 7px rgb(0 0 0 / 24%);
+}
+
+.selected {
+  outline: 4px solid var(--gold);
+  outline-offset: 2px;
+  transform: translateY(-4px);
+}
+
+.stock-count,
+.pile-count {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  z-index: 2;
+  min-width: 22px;
+  padding: 2px 5px;
+  color: white;
+  font-size: clamp(0.69rem, calc(var(--card-width) * 0.09), 0.9rem);
+  font-weight: 700;
+  background: rgb(0 0 0 / 64%);
+  border-radius: 10px;
+}
+
+
+.card-slot.recycle::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  content: "↻";
+  color: rgb(255 255 255 / 45%);
+  font-size: calc(var(--card-width) * 0.55);
+  line-height: 1;
+}
+
+/* Deck tap is the next step: deal into the gaps. */
+#stock.is-ready {
+  box-shadow:
+    inset 0 0 0 2px #173e78,
+    0 0 0 3px var(--gold),
+    0 3px 7px rgb(0 0 0 / 24%);
+}
+
+/* The face card that had nowhere to go. */
+#waste > .playing-card.is-stuck {
+  outline: 4px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* Empty frame spots name the face card they hold. */
+.grid-cell[data-hint]::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  content: attr(data-hint);
+  color: rgb(232 196 107 / 42%);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(var(--card-width) * 0.42);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.grid-cell.is-frame::before {
+  border-color: rgb(232 196 107 / 30%);
+}
+
+.grid-cell.is-center::before {
+  border-style: dashed;
+}
+
+/* Face cards sit in the frame for good. */
+.grid-cell > .playing-card.is-face {
+  cursor: default;
+  background: linear-gradient(145deg, #fffaf0 0%, #f2e2bd 100%);
+  border-color: rgb(160 120 40 / 45%);
+}
+
+/* While clearing, number cards lift a touch to invite a tap. */
+main.is-clearing .grid-cell > .playing-card.is-clearable:not(.selected) {
+  box-shadow:
+    0 0 0 2px rgb(232 196 107 / 55%),
+    0 3px 7px rgb(0 0 0 / 24%);
+}
+
+.drag-origin {
+  opacity: 0.48;
+}
+
+.drag-ghost,
+.drag-ghost * {
+  /* Drops are resolved with elementFromPoint, which must see through the ghost. */
+  pointer-events: none !important;
+}
+
+.drag-ghost {
+  position: fixed !important;
+  z-index: 10000 !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: drop-shadow(0 12px 12px rgb(0 0 0 / 30%));
+}
+
+body.dragging,
+body.dragging * {
+  cursor: grabbing !important;
+}
+
+.status {
+  grid-area: status;
+  min-height: 22px;
+  margin: 16px 0 0;
+  color: rgb(255 255 255 / 76%);
+  font-size: 0.83rem;
+  text-align: center;
+}
+
+.board-new-game.primary-button {
+  display: block;
+  grid-area: newgame;
+  min-width: 150px;
+  margin: 18px auto 0;
+  color: #fff !important;
+  background: #315b98 !important;
+  border: 1px solid #173e78 !important;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 32%);
+}
+
+.board-new-game.primary-button:hover {
+  background: #173e78 !important;
+}
+
+.board-new-game[hidden] {
+  display: none;
+}
+
+.build-info {
+  position: fixed;
+  right: 10px;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 50;
+  color: rgb(255 255 255 / 38%);
+  font-size: 0.67rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.build-info:focus-visible {
+  color: rgb(255 255 255 / 70%);
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgb(4 24 17 / 62%);
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-backdrop[hidden] {
+  display: none;
+}
+
+.menu-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100% - 48px));
+  padding: 0 var(--menu-drawer-inline) max(22px, env(safe-area-inset-bottom));
+  color: var(--ink);
+  background: #fffdf8;
+  box-shadow: 4px 0 18px rgb(0 0 0 / 22%);
+  transform: translateX(-105%);
+  visibility: hidden;
+  transition:
+    transform 220ms ease,
+    visibility 220ms ease;
+  will-change: transform;
+}
+
+.menu-drawer.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.menu-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.menu-actions button,
+.menu-actions .menu-link,
+.result-actions button,
+.primary-button {
+  min-height: 46px;
+  padding: 10px 16px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: none;
+  background: #f1ecdf;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.menu-actions button:hover,
+.menu-actions .menu-link:hover,
+.result-actions button:hover {
+  background: #e9e1d2;
+}
+
+.menu-actions .menu-link {
+  display: grid;
+  place-items: center;
+}
+
+.menu-divider {
+  width: 40%;
+  height: 1px;
+  margin: 10px auto;
+  background: rgb(0 0 0 / 14%);
+}
+
+.gg-menu-auth {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.gg-menu-auth .gg-login-btn {
+  color: #fff;
+  background: var(--felt);
+  border-color: var(--felt-dark);
+}
+
+.gg-menu-auth .gg-logout-btn {
+  color: #fff;
+  background: var(--red);
+  border-color: #8f2430;
+}
+
+.gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-logout-btn[hidden] {
+  display: none;
+}
+
+.gg-screen-name {
+  margin: 0 0 8px;
+  color: rgb(0 0 0 / 55%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.gg-screen-name[hidden] {
+  display: none;
+}
+
+dialog {
+  width: min(calc(100% - 32px), 430px);
+  padding: 22px;
+  color: var(--ink);
+  background: #fffdf8;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 38%);
+}
+
+dialog::backdrop {
+  background: rgb(4 24 17 / 72%);
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.menu-drawer .dialog-heading {
+  min-height: var(--topbar-height);
+  margin-bottom: 12px;
+  /* Sit beside the close button (aligned to the hamburger). */
+  padding-left: calc(var(--topbar-inline) + var(--menu-button-size) - var(--menu-drawer-inline));
+  justify-content: flex-start;
+}
+
+.menu-drawer #close-menu {
+  position: absolute;
+  top: calc((var(--topbar-height) - var(--menu-button-size)) / 2);
+  left: var(--topbar-inline);
+}
+
+.dialog-heading h2,
+.result-dialog h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.65rem;
+}
+
+.primary-button {
+  color: white !important;
+  background: var(--felt) !important;
+  border-color: var(--felt-dark) !important;
+}
+
+.rules-copy {
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+  line-height: 1.52;
+}
+
+.rules-copy p:first-child {
+  margin-top: 0;
+}
+
+.option-group {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.option-group legend {
+  margin-bottom: 12px;
+  padding: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.option-choices {
+  display: grid;
+  gap: 8px;
+}
+
+.option-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 10px 14px;
+  background: #f1ecdf;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.option-choice:hover {
+  background: #e9e1d2;
+}
+
+.option-choice:has(:checked) {
+  background: #e4dbd0;
+  border-color: #c9bea6;
+}
+
+.option-choice:has(:checked):hover {
+  background: #ddd4c6;
+}
+
+.option-choice input {
+  width: 1.1em;
+  height: 1.1em;
+  accent-color: var(--felt);
+  flex-shrink: 0;
+}
+
+.option-choice span {
+  font-weight: 650;
+}
+
+#options-done {
+  width: 100%;
+}
+
+.rules-dialog > .primary-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.result-dialog {
+  text-align: center;
+}
+
+.result-symbol {
+  margin-bottom: 6px;
+  font-size: 3rem;
+}
+
+.result-dialog p {
+  color: #4f5753;
+  line-height: 1.45;
+}
+
+.result-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+@media (max-width: 620px) {
+  main {
+    padding-inline: 12px;
+  }
+
+  .playing-card .corner {
+    top: 6%;
+    left: 8%;
+    gap: 0.06em;
+    font-size: min(calc(var(--card-width) * 0.3), 1.6rem);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 410px) {
+  :root {
+    --topbar-inline: 8px;
+  }
+
+  .topbar {
+    padding-inline: var(--topbar-inline);
+  }
+
+  .score {
+    min-height: 34px;
+    padding-inline: 10px;
+  }
+
+  h1 {
+    font-size: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .playing-card,
+  .card-slot,
+  dialog {
+    transition:
+      transform 140ms ease,
+      box-shadow 140ms ease,
+      opacity 140ms ease;
+  }
+
+  dialog[open] {
+    animation: appear 160ms ease-out;
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-drawer {
+    transition: none;
+  }
+}

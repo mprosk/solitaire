@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- frame-ancestors / HSTS can't go in a meta tag; Cloudflare sets those headers. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://oxcrkikwjushtszpdigq.supabase.co wss://oxcrkikwjushtszpdigq.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123d2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Picture Frame" />
+    <meta
+      name="description"
+      content="Picture Frame solitaire: frame the board with face cards and clear the rest in pairs of 10."
+    />
+    <title>Picture Frame</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="modulepreload" href="game.js" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button
+        id="menu-button"
+        class="icon-button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu-drawer"
+        type="button"
+      >
+        <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <h1>Picture Frame</h1>
+      <div class="score" aria-live="polite">
+        <span>Score</span>
+        <strong id="score">0</strong>
+      </div>
+    </header>
+
+    <main data-deck-position="upper-left">
+      <div class="deck-group" aria-label="Deck">
+        <button id="stock" class="card-slot" type="button" aria-label="Draw from deck"></button>
+        <button id="waste" class="card-slot" type="button" aria-label="Revealed card"></button>
+      </div>
+
+      <section id="grid" class="frame-grid" aria-label="Picture frame"></section>
+
+      <p id="status" class="status" aria-live="polite"></p>
+      <button id="board-new-game" class="board-new-game primary-button" type="button" hidden>
+        New game
+      </button>
+    </main>
+
+    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v2.4</footer>
+
+    <div id="menu-backdrop" class="menu-backdrop" hidden></div>
+    <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
+      <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
+        ×
+      </button>
+      <div class="dialog-heading">
+        <h2>Game</h2>
+      </div>
+      <div class="menu-actions">
+        <button id="new-game" type="button">New game</button>
+        <button id="restart-game" type="button">Restart this deal</button>
+        <button id="undo" type="button">Undo</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <button id="show-options" type="button">Options</button>
+        <button id="show-leaderboard" type="button">Leaderboard</button>
+        <button id="show-rules" type="button">How to play</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <a id="back-to-picker" class="menu-link" href="../">All games</a>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <p class="gg-screen-name" data-gg-screen-name hidden></p>
+        <div class="gg-menu-auth">
+          <button id="menu-login" class="gg-login-btn" type="button">Log In</button>
+          <button id="menu-logout" class="gg-logout-btn" type="button" hidden>Log Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <dialog id="options-dialog" class="options-dialog">
+      <div class="dialog-heading">
+        <h2>Options</h2>
+        <button id="close-options" class="icon-button dark" type="button" aria-label="Close options">
+          ×
+        </button>
+      </div>
+      <fieldset class="option-group">
+        <legend>Deck location</legend>
+        <div class="option-choices" role="radiogroup" aria-label="Deck location">
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="upper-left" checked />
+            <span>Upper left</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="upper-right" />
+            <span>Upper right</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="lower-left" />
+            <span>Lower left</span>
+          </label>
+          <label class="option-choice">
+            <input type="radio" name="deck-position" value="lower-right" />
+            <span>Lower right</span>
+          </label>
+        </div>
+      </fieldset>
+      <button id="options-done" class="primary-button" type="button">Done</button>
+    </dialog>
+
+    <dialog id="rules-dialog" class="rules-dialog">
+      <div class="dialog-heading">
+        <h2>How to play</h2>
+        <button id="close-rules" class="icon-button dark" type="button" aria-label="Close rules">
+          ×
+        </button>
+      </div>
+      <div class="rules-copy">
+        <p>
+          Frame the board with all twelve face cards — Kings in the corners, Queens along
+          the top and bottom, Jacks down the sides — and clear every other card away,
+          leaving the four center spots empty.
+        </p>
+        <p>
+          Cards come off the deck one at a time. Face cards go straight to an open spot of
+          their own. Number cards can go in any empty spot, including a face card’s, so
+          place them with care: if a face card turns up and every spot for it is taken,
+          the game is over.
+        </p>
+        <p>
+          Once all sixteen spots are full, clear pairs of number cards that add up to 10
+          (an Ace counts as 1). A 10 clears on its own. Tap one card and then its partner,
+          or drag one onto the other. Then tap the deck to keep dealing into the gaps.
+        </p>
+        <p>
+          You go through the deck only once. When it runs out, clear whatever pairs are
+          left. You win when only the face cards remain in the frame.
+        </p>
+      </div>
+      <button id="rules-done" class="primary-button" type="button">Done</button>
+    </dialog>
+
+    <dialog id="result-dialog" class="result-dialog">
+      <div id="result-symbol" class="result-symbol" aria-hidden="true"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-message"></p>
+      <div id="result-login-prompt" class="result-login-prompt" hidden>
+        <p>Create an account to save this win to the leaderboard. Already have one? Log in with the same email.</p>
+        <button id="result-login" class="primary-button gg-primary" type="button">Create account</button>
+      </div>
+      <div class="result-actions">
+        <button id="keep-playing" type="button">View board</button>
+        <button id="result-new-game" class="primary-button" type="button">New game</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="game.js"></script>
+    <script src="sw-register.js" defer></script>
+  </body>
+</html>

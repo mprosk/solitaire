@@ -27,6 +27,9 @@
     <link rel="prefetch" href="./larrys-game/" as="document" />
     <link rel="prefetch" href="./larrys-game/game.js" as="script" />
     <link rel="prefetch" href="./larrys-game/styles.css" as="style" />
+    <link rel="prefetch" href="./picture-frame/" as="document" />
+    <link rel="prefetch" href="./picture-frame/game.js" as="script" />
+    <link rel="prefetch" href="./picture-frame/styles.css" as="style" />
     <style>
       /* Critical layout inlined so a stale SW can't leave bare blue links. */
       .game-list {
@@ -146,11 +149,19 @@
             <span class="game-name">Aunt Ella’s Cross — <em>Coming Soon!</em></span>
           </span>
         </div>
-        <div class="game-link is-disabled" aria-disabled="true">
+        <a class="game-link" href="./picture-frame/">
           <span class="game-main">
-            <span class="game-name">Picture Frame — <em>Coming Soon!</em></span>
+            <img
+              class="game-icon"
+              src="./picture-frame/icons/icon-source.svg"
+              alt=""
+              width="48"
+              height="48"
+            />
+            <span class="game-name">Picture Frame</span>
           </span>
-        </div>
+          <span class="game-meta">Play</span>
+        </a>
         <hr class="game-divider" />
         <a class="game-link" href="https://mprosk.github.io/hazels-game/">
           <span class="game-main">

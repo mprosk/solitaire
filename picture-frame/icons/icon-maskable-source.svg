@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="16" height="28">
+      <rect width="16" height="28" fill="#7a1622"/>
+      <polygon points="8,0 12,7 8,14 4,7" fill="#a3323f"/>
+      <polygon points="0,14 4,21 0,28 -4,21" fill="#a3323f"/>
+      <polygon points="16,14 20,21 16,28 12,21" fill="#a3323f"/>
+      <polygon points="8,14 12,21 8,28 4,21" fill="#a3323f"/>
+      <polygon points="0,0 4,7 0,14 -4,7" fill="#c4535f"/>
+      <polygon points="16,0 20,7 16,14 12,7" fill="#c4535f"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <g id="back">
+      <rect width="54" height="76" rx="4.7" fill="#f3e9d5"/>
+      <rect x="2.9" y="2.9" width="48.2" height="70.2" rx="3.2"
+            fill="url(#cardBack)" stroke="#7a1622" stroke-width="1.5"/>
+    </g>
+  </defs>
+
+  <!-- Felt background fills the whole canvas so any mask shape looks clean -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!--
+    The picture frame: a 4x4 grid (54 x 76 cards, 7px gutter) of face-down
+    red cards around the edge, with the four center spots left clear. Corners stay inside the 205px maskable safe zone.
+  -->
+  <use href="#back" x="137.5" y="93.5" filter="url(#shadow)"/>
+  <use href="#back" x="198.5" y="93.5" filter="url(#shadow)"/>
+  <use href="#back" x="259.5" y="93.5" filter="url(#shadow)"/>
+  <use href="#back" x="320.5" y="93.5" filter="url(#shadow)"/>
+  <use href="#back" x="137.5" y="176.5" filter="url(#shadow)"/>
+  <use href="#back" x="320.5" y="176.5" filter="url(#shadow)"/>
+  <use href="#back" x="137.5" y="259.5" filter="url(#shadow)"/>
+  <use href="#back" x="320.5" y="259.5" filter="url(#shadow)"/>
+  <use href="#back" x="137.5" y="342.5" filter="url(#shadow)"/>
+  <use href="#back" x="198.5" y="342.5" filter="url(#shadow)"/>
+  <use href="#back" x="259.5" y="342.5" filter="url(#shadow)"/>
+  <use href="#back" x="320.5" y="342.5" filter="url(#shadow)"/>
+</svg>

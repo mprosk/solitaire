@@ -1,6 +1,6 @@
 ---
 description: App release version vs service worker CACHE_NAME — keep them separate
-globs: sw.js,hated-game/sw.js,larrys-game/sw.js,app.js,hated-game/game.js,larrys-game/game.js,index.html,hated-game/index.html,larrys-game/index.html
+globs: sw.js,hated-game/sw.js,larrys-game/sw.js,picture-frame/sw.js,app.js,hated-game/game.js,larrys-game/game.js,picture-frame/game.js,index.html,hated-game/index.html,larrys-game/index.html,picture-frame/index.html
 alwaysApply: false
 ---
 
