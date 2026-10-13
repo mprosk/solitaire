@@ -708,6 +708,73 @@ dialog::backdrop {
   font-weight: 650;
 }
 
+/* Deck location: one portrait phone screen with a card spot in each corner. */
+.deck-phone {
+  position: relative;
+  width: 124px;
+  height: 220px;
+  margin: 0 auto;
+  border: 3px solid #a99f8c;
+  border-radius: 18px;
+}
+
+/* Speaker notch, so the outline reads as a phone. */
+.deck-phone::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 28px;
+  height: 4px;
+  background: #a99f8c;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.deck-corner {
+  position: absolute;
+  width: 34px;
+  height: 48px;
+  background: #ddd5c4;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.deck-corner:hover {
+  background: #cfc6b3;
+}
+
+.deck-corner:has(:checked) {
+  background: var(--felt);
+}
+
+.deck-corner:has(:focus-visible) {
+  outline: 2px solid var(--felt);
+  outline-offset: 2px;
+}
+
+.deck-corner input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deck-corner[data-corner^="upper"] {
+  top: 18px;
+}
+
+.deck-corner[data-corner^="lower"] {
+  bottom: 10px;
+}
+
+.deck-corner[data-corner$="left"] {
+  left: 10px;
+}
+
+.deck-corner[data-corner$="right"] {
+  right: 10px;
+}
+
 #options-done {
   width: 100%;
 }

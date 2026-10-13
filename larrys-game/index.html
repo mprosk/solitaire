@@ -97,22 +97,27 @@
       </div>
       <fieldset class="option-group">
         <legend>Deck location</legend>
-        <div class="option-choices" role="radiogroup" aria-label="Deck location">
-          <label class="option-choice">
-            <input type="radio" name="deck-position" value="upper-left" checked />
-            <span>Upper left</span>
+        <div class="deck-phone" role="radiogroup" aria-label="Deck location">
+          <label class="deck-corner" data-corner="upper-left">
+            <input type="radio" name="deck-position" value="upper-left" aria-label="Upper left" checked />
           </label>
-          <label class="option-choice">
-            <input type="radio" name="deck-position" value="upper-right" />
-            <span>Upper right</span>
+          <label class="deck-corner" data-corner="upper-right">
+            <input type="radio" name="deck-position" value="upper-right" aria-label="Upper right" />
           </label>
-          <label class="option-choice">
-            <input type="radio" name="deck-position" value="lower-left" />
-            <span>Lower left</span>
+          <label class="deck-corner" data-corner="lower-left">
+            <input type="radio" name="deck-position" value="lower-left" aria-label="Lower left" />
           </label>
+          <label class="deck-corner" data-corner="lower-right">
+            <input type="radio" name="deck-position" value="lower-right" aria-label="Lower right" />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset class="option-group">
+        <legend>Game over</legend>
+        <div class="option-choices">
           <label class="option-choice">
-            <input type="radio" name="deck-position" value="lower-right" />
-            <span>Lower right</span>
+            <input id="alert-on-game-over" type="checkbox" checked />
+            <span>Alert on game over</span>
           </label>
         </div>
       </fieldset>

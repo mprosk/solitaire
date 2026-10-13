@@ -10,10 +10,11 @@
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
   const VERSION = "v2.5";
+  const GAME_SLUG = "hated-game";
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
   const DECK_POSITIONS = ["upper-left", "upper-right", "lower-left", "lower-right"];
-  const DEFAULT_OPTIONS = { deckPosition: "upper-left" };
+  const DEFAULT_OPTIONS = { deckPosition: "upper-left", alertOnGameOver: true };
 
   const elements = {
     board: document.querySelector("main"),
@@ -29,6 +30,7 @@
     menuButton: document.querySelector("#menu-button"),
     rules: document.querySelector("#rules-dialog"),
     options: document.querySelector("#options-dialog"),
+    alertOnGameOver: document.querySelector("#alert-on-game-over"),
     wastePreview: document.querySelector("#waste-preview"),
     wasteCards: document.querySelector("#waste-cards"),
     result: document.querySelector("#result-dialog"),
@@ -94,6 +96,7 @@
         screenNameEl: document.querySelector("[data-gg-screen-name]"),
         onAuthChange: ({ user }) => {
           if (user) submitPendingWin();
+          void syncOptions(user);
         },
       });
       return { account, leaderboard, supabase };
@@ -101,23 +104,74 @@
     return authFeaturesPromise;
   }
 
-  function loadOptions() {
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(OPTIONS_KEY));
-      if (saved && DECK_POSITIONS.includes(saved.deckPosition)) {
-        return { deckPosition: saved.deckPosition };
-      }
-    } catch {
-      // Fall through to defaults when storage is unavailable or corrupt.
-    }
-    return { ...DEFAULT_OPTIONS };
+  /** Saved options (local or from the account) with anything missing or invalid defaulted. */
+  function normalizeOptions(saved) {
+    return {
+      deckPosition: DECK_POSITIONS.includes(saved?.deckPosition)
+        ? saved.deckPosition
+        : DEFAULT_OPTIONS.deckPosition,
+      alertOnGameOver:
+        typeof saved?.alertOnGameOver === "boolean"
+          ? saved.alertOnGameOver
+          : DEFAULT_OPTIONS.alertOnGameOver,
+    };
   }
 
-  function persistOptions() {
+  function loadOptions() {
+    try {
+      return normalizeOptions(JSON.parse(window.localStorage.getItem(OPTIONS_KEY)));
+    } catch {
+      // Fall back to defaults when storage is unavailable or corrupt.
+      return { ...DEFAULT_OPTIONS };
+    }
+  }
+
+  function persistLocalOptions() {
     try {
       window.localStorage.setItem(OPTIONS_KEY, JSON.stringify(options));
     } catch {
       // Options still apply for this session when storage is unavailable.
+    }
+  }
+
+  /** Save locally, and to the account when signed in so options follow the player. */
+  function persistOptions() {
+    persistLocalOptions();
+    if (account?.getState().user) {
+      void supabaseApi.saveGameSettings(GAME_SLUG, options).catch(() => {
+        // Offline: this device keeps the change; the account catches up on the next save.
+      });
+    }
+  }
+
+  /** User id whose saved options have been loaded, so token refreshes don't refetch. */
+  let optionsSyncedFor = null;
+
+  /**
+   * On sign-in, the account's saved options win; an account with none saved yet
+   * takes this device's.
+   */
+  async function syncOptions(user) {
+    if (!user) {
+      optionsSyncedFor = null;
+      return;
+    }
+    if (optionsSyncedFor === user.id) return;
+    optionsSyncedFor = user.id;
+    try {
+      const { data, error } = await supabaseApi.fetchGameSettings(GAME_SLUG);
+      if (error) throw error;
+      if (!data) {
+        await supabaseApi.saveGameSettings(GAME_SLUG, options);
+        return;
+      }
+      options = normalizeOptions(data);
+      persistLocalOptions();
+      applyOptions();
+      render();
+    } catch {
+      // Retry on the next auth event.
+      optionsSyncedFor = null;
     }
   }
 
@@ -135,6 +189,16 @@
     applyDeckPosition(position);
     persistOptions();
     render();
+  }
+
+  function applyOptions() {
+    applyDeckPosition();
+    elements.alertOnGameOver.checked = options.alertOnGameOver;
+  }
+
+  function setAlertOnGameOver(enabled) {
+    options.alertOnGameOver = enabled;
+    persistOptions();
   }
 
   function createDeck() {
@@ -848,6 +912,8 @@
   }
 
   async function showResult(result) {
+    // With the alert off, the board's New game button and status line mark the end.
+    if (!options.alertOnGameOver) return;
     const won = result === "win";
     elements.resultSymbol.textContent = won ? "♛" : "♠";
     elements.resultTitle.textContent = won ? "You won!" : "No moves remain";
@@ -1435,7 +1501,7 @@
   document.querySelector("#menu-logout").addEventListener("click", closeMenu);
   document.querySelector("#show-options").addEventListener("click", () => {
     closeMenu();
-    applyDeckPosition();
+    applyOptions();
     openDialog(elements.options);
   });
   document.querySelector("#show-leaderboard").addEventListener("click", () => {
@@ -1450,6 +1516,9 @@
     input.addEventListener("change", () => {
       if (input.checked) setDeckPosition(input.value);
     });
+  });
+  elements.alertOnGameOver.addEventListener("change", () => {
+    setAlertOnGameOver(elements.alertOnGameOver.checked);
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.menu.classList.contains("is-open")) {
@@ -1514,7 +1583,7 @@
   }
 
   // Deal / restore immediately — do not wait on auth CDN or GitHub version hash.
-  applyDeckPosition();
+  applyOptions();
   const queryParams = new URLSearchParams(window.location.search);
   if (queryParams.has("stacked")) {
     // Deterministic visual-test deal; bypasses the session restore so every
