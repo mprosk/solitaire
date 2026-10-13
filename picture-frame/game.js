@@ -16,7 +16,7 @@
   const PLACE_STATUS = "Tap an empty spot to place the card, or drag it there.";
   const CLEAR_STATUS =
     "Tap two cards that add up to 10 (a 10 clears on its own), then tap the deck to keep dealing.";
-  const VERSION = "v2.5";
+  const VERSION = "v2.6";
   const GAME_SLUG = "picture-frame";
   const STORAGE_KEY = "picture-frame:save-v1";
   const OPTIONS_KEY = "picture-frame:options-v1";
@@ -87,7 +87,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.5";
+    link.href = "../lib/guygames-ui.css?v=2.6";
     document.head.append(link);
   }
 

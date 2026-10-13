@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Tap a card to play it, or drag it where it should go.";
-  const VERSION = "v2.5";
+  const VERSION = "v2.6";
   const GAME_SLUG = "larrys-game";
   const STORAGE_KEY = "larrys-game:save-v1";
   const OPTIONS_KEY = "larrys-game:options-v1";
@@ -68,7 +68,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.5";
+    link.href = "../lib/guygames-ui.css?v=2.6";
     document.head.append(link);
   }
 
