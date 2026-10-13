@@ -446,30 +446,22 @@
     return values.some((value, index) => values.indexOf(10 - value, index + 1) !== -1);
   }
 
-  /**
-   * Turn up cards until one needs the player: face cards drop straight into their
-   * spots, a number card waits to be placed, and a full board stops to clear.
-   */
+  /** Turn up the next card for the player to place, or stop to clear once the board is full. */
   function advance() {
-    while (!state.gameOver && !state.revealed && !state.clearing && state.stock.length) {
-      if (!hasEmptyCell()) {
-        state.clearing = true;
-        return;
-      }
-      const card = state.stock.pop();
-      const cell = isFace(card) ? emptyFaceCell(card.rank) : -1;
-      if (cell === -1) {
-        // A number card waits for the player; a stranded face card ends the deal.
-        state.revealed = card;
-        return;
-      }
-      state.grid[cell] = card;
+    if (state.gameOver || state.revealed || state.clearing) return;
+    if (!hasEmptyCell()) {
+      state.clearing = true;
+      return;
     }
-    if (!state.revealed && !hasEmptyCell()) state.clearing = true;
+    if (state.stock.length) state.revealed = state.stock.pop();
   }
 
-  /** Best empty spot for a number card: the center, then frames whose faces are mostly out. */
+  /**
+   * Best empty spot for the revealed card: a face card's own spot; for a number card,
+   * the center, then frames whose faces are mostly out.
+   */
   function suggestedCell() {
+    if (isFace(state.revealed)) return emptyFaceCell(state.revealed.rank);
     let best = -1;
     let bestScore = -1;
     state.grid.forEach((card, index) => {
@@ -488,6 +480,11 @@
     if (state.gameOver || !state.revealed) return false;
     if (state.grid[index]) {
       setStatus("That spot is taken. Place the card in an empty spot.");
+      return false;
+    }
+    const card = state.revealed;
+    if (isFace(card) && CELL_FACE[index] !== card.rank) {
+      setStatus(`The ${card.label} goes ${FACE_PLACES[card.rank]}.`);
       return false;
     }
     saveHistory();
@@ -597,15 +594,16 @@
   /** Why the deal can't go on, or null while it can. */
   function lossReason() {
     const card = state.revealed;
-    if (card && isFace(card)) {
+    if (card && isFace(card) && emptyFaceCell(card.rank) === -1) {
       return `The ${card.label} had no open spot ${FACE_PLACES[card.rank]}.`;
     }
     return hasLegalMove() ? null : "No pairs are left to clear.";
   }
 
   function hasLegalMove() {
-    // A revealed number card always has an empty spot: cards only turn up when one is free.
-    if (state.revealed) return !isFace(state.revealed);
+    // A revealed card always has an empty spot (cards only turn up when one is free);
+    // a face card needs one of its own, which lossReason has already checked.
+    if (state.revealed) return true;
     if (state.stock.length && hasEmptyCell()) return true;
     return canClear() && hasClearable();
   }
@@ -634,7 +632,10 @@
   function defaultStatus() {
     if (state.gameOver === "win") return "You framed the board.";
     if (state.gameOver) return lossReason() || "No legal moves remain.";
-    if (state.revealed) return PLACE_STATUS;
+    if (state.revealed) {
+      const card = state.revealed;
+      return isFace(card) ? `Place the ${card.label} ${FACE_PLACES[card.rank]}.` : PLACE_STATUS;
+    }
     if (canClear()) {
       return state.stock.length ? CLEAR_STATUS : "The deck is out. Clear the last pairs.";
     }
