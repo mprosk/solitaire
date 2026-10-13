@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- frame-ancestors / HSTS can't go in a meta tag; Cloudflare sets those headers. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://oxcrkikwjushtszpdigq.supabase.co wss://oxcrkikwjushtszpdigq.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123d2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Ella’s Cross" />
+    <meta
+      name="description"
+      content="Aunt Ella’s Cross solitaire: build four suits up from the cross."
+    />
+    <title>Aunt Ella’s Cross</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="modulepreload" href="game.js" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button
+        id="menu-button"
+        class="icon-button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="menu-drawer"
+        type="button"
+      >
+        <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <h1>Aunt Ella’s Cross</h1>
+      <div class="score" aria-live="polite">
+        <span>Score</span>
+        <strong id="score">1</strong>
+      </div>
+    </header>
+
+    <main data-deck-position="upper-left">
+      <div class="pile-group" aria-label="Deck">
+        <button id="stock" class="card-slot" type="button" aria-label="Draw from deck"></button>
+        <button id="waste" class="card-slot" type="button" aria-label="Top revealed card"></button>
+      </div>
+
+      <div class="foundation-zone">
+        <div id="foundations" class="foundations" aria-label="Up piles"></div>
+      </div>
+
+      <section id="cross" class="cross" aria-label="The cross"></section>
+
+      <div
+        id="waste-preview"
+        class="waste-preview"
+        role="region"
+        aria-label="Revealed cards, top card fully exposed"
+        tabindex="-1"
+        hidden
+      >
+        <div id="waste-cards" class="waste-cards" role="list"></div>
+        <span class="waste-preview-hint">Tap anywhere to close</span>
+      </div>
+
+      <p id="status" class="status" aria-live="polite">Drag a card to where it should go.</p>
+      <button id="board-new-game" class="board-new-game primary-button" type="button" hidden>
+        New game
+      </button>
+    </main>
+
+    <footer id="build-info" class="build-info" title="Copy version" role="button" tabindex="0">v2.6</footer>
+
+    <div id="menu-backdrop" class="menu-backdrop" hidden></div>
+    <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Game menu">
+      <button id="close-menu" class="icon-button dark" type="button" aria-label="Close menu">
+        ×
+      </button>
+      <div class="dialog-heading">
+        <h2>Game</h2>
+      </div>
+      <div class="menu-actions">
+        <button id="new-game" type="button">New game</button>
+        <button id="restart-game" type="button">Restart this deal</button>
+        <button id="undo" type="button">Undo</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <button id="show-options" type="button">Options</button>
+        <button id="show-leaderboard" type="button">Leaderboard</button>
+        <button id="show-rules" type="button">How to play</button>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <a id="back-to-picker" class="menu-link" href="../">All games</a>
+        <div class="menu-divider" aria-hidden="true"></div>
+        <p class="gg-screen-name" data-gg-screen-name hidden></p>
+        <div class="gg-menu-auth">
+          <button id="menu-login" class="gg-login-btn" type="button">Log In</button>
+          <button id="menu-logout" class="gg-logout-btn" type="button" hidden>Log Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <dialog id="options-dialog" class="options-dialog">
+      <div class="dialog-heading">
+        <h2>Options</h2>
+        <button id="close-options" class="icon-button dark" type="button" aria-label="Close options">
+          ×
+        </button>
+      </div>
+      <fieldset class="option-group">
+        <legend>Deck location</legend>
+        <div class="deck-phone" role="radiogroup" aria-label="Deck location">
+          <label class="deck-corner" data-corner="upper-left">
+            <input type="radio" name="deck-position" value="upper-left" aria-label="Upper left" checked />
+          </label>
+          <label class="deck-corner" data-corner="upper-right">
+            <input type="radio" name="deck-position" value="upper-right" aria-label="Upper right" />
+          </label>
+          <label class="deck-corner" data-corner="lower-left">
+            <input type="radio" name="deck-position" value="lower-left" aria-label="Lower left" />
+          </label>
+          <label class="deck-corner" data-corner="lower-right">
+            <input type="radio" name="deck-position" value="lower-right" aria-label="Lower right" />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset class="option-group">
+        <legend>Game over</legend>
+        <div class="option-choices">
+          <label class="option-choice">
+            <input id="alert-on-game-over" type="checkbox" checked />
+            <span>Alert on game over</span>
+          </label>
+        </div>
+      </fieldset>
+      <button id="options-done" class="primary-button" type="button">Done</button>
+    </dialog>
+
+    <dialog id="rules-dialog" class="rules-dialog">
+      <div class="dialog-heading">
+        <h2>How to play</h2>
+        <button id="close-rules" class="icon-button dark" type="button" aria-label="Close rules">
+          ×
+        </button>
+      </div>
+      <div class="rules-copy">
+        <p>
+          Five cards are dealt face up in a cross, and one more starts the up piles. Get all
+          52 cards into the up piles to win.
+        </p>
+        <p>
+          Build the cross stacks downward one rank at a time, alternating colors. Aces and
+          kings wrap: 2–A–K. Cards stack squarely, so only the top card of a stack shows and
+          only the top card moves — onto another stack, into an empty spot, or up.
+        </p>
+        <p>
+          Up piles build upward by suit, one rank at a time, and wrap from king to ace.
+          Start another suit with a card matching the first up card’s rank. A card may be
+          taken back from an up pile onto a cross stack.
+        </p>
+        <p>
+          Turn the deck over one card at a time; there is no second pass. An empty spot in
+          the cross must be filled (from the revealed pile or another stack’s top card)
+          before more cards can be turned. If the revealed pile is empty, the top deck card
+          fills the spot directly.
+        </p>
+        <p>
+          Click the revealed card to fill an empty spot. Double-click a card to send it to
+          its up pile; double-clicking the revealed card prefers its up pile, then an empty
+          spot. Long-press the revealed card—or tap its count—to view every card in that
+          pile.
+        </p>
+      </div>
+      <button id="rules-done" class="primary-button" type="button">Done</button>
+    </dialog>
+
+    <dialog id="result-dialog" class="result-dialog">
+      <div id="result-symbol" class="result-symbol" aria-hidden="true"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-message"></p>
+      <div id="result-login-prompt" class="result-login-prompt" hidden>
+        <p>Create an account to save this win to the leaderboard. Already have one? Log in with the same email.</p>
+        <button id="result-login" class="primary-button gg-primary" type="button">Create account</button>
+      </div>
+      <div class="result-actions">
+        <button id="keep-playing" type="button">View board</button>
+        <button id="result-new-game" class="primary-button" type="button">New game</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="game.js"></script>
+    <script src="sw-register.js" defer></script>
+  </body>
+</html>
