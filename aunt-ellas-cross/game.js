@@ -493,11 +493,30 @@
     return true;
   }
 
-  /** Send `source`'s top card to its up pile. */
-  function moveToFoundation(source) {
+  /**
+   * Double-click: send `source`'s top card to its up pile, else onto a cross stack it
+   * joins, else into an empty spot (never a stack's last card, which only moves the hole).
+   */
+  function autoMove(source) {
     const card = topOf(sourcePile(source));
     if (!card || state.gameOver) return false;
-    return moveCard(source, { type: "foundation", index: card.suit });
+    const crossIndexes = state.cross.map((_, index) => index);
+    const lastCard = source.type === "cross" && state.cross[source.index].length === 1;
+    const destinations = [
+      { type: "foundation", index: card.suit },
+      ...crossIndexes
+        .filter((index) => state.cross[index].length)
+        .map((index) => ({ type: "cross", index })),
+      ...crossIndexes
+        .filter((index) => !state.cross[index].length && !lastCard)
+        .map((index) => ({ type: "cross", index })),
+    ];
+    const destination = destinations.find((option) => !moveRefusal(source, option));
+    if (!destination) {
+      setStatus("That card has no automatic destination.");
+      return false;
+    }
+    return moveCard(source, destination);
   }
 
   function finishMove() {
@@ -1000,19 +1019,6 @@
     moveCard({ type: "waste" }, { type: "cross", index: emptyIndex });
   }
 
-  function moveWasteOnDoubleClick() {
-    const card = topOf(state.waste);
-    if (canJoinFoundation(card, card.suit)) {
-      moveToFoundation({ type: "waste" });
-      return;
-    }
-    if (emptyCrossIndex() !== -1) {
-      fillFromWaste();
-      return;
-    }
-    setStatus("That card has no automatic destination.");
-  }
-
   function isSuppressedClick(event) {
     if (Date.now() < suppressCardClickUntil) {
       event.stopPropagation();
@@ -1041,7 +1047,7 @@
   elements.waste.addEventListener("dblclick", () => {
     cancelWasteClick();
     if (Date.now() < suppressCardClickUntil || state.gameOver || !state.waste.length) return;
-    moveWasteOnDoubleClick();
+    autoMove({ type: "waste" });
   });
   elements.waste.addEventListener("pointerdown", startWasteLongPress);
   elements.waste.addEventListener("contextmenu", (event) => event.preventDefault());
@@ -1051,7 +1057,12 @@
   elements.cross.addEventListener("dblclick", (event) => {
     const pile = event.target.closest("[data-cross]");
     if (!pile || Date.now() < suppressCardClickUntil) return;
-    moveToFoundation({ type: "cross", index: Number(pile.dataset.cross) });
+    autoMove({ type: "cross", index: Number(pile.dataset.cross) });
+  });
+  elements.foundations.addEventListener("dblclick", (event) => {
+    const pile = event.target.closest("[data-foundation]");
+    if (!pile || Date.now() < suppressCardClickUntil) return;
+    autoMove({ type: "foundation", index: Number(pile.dataset.foundation) });
   });
   document.addEventListener("pointermove", moveDrag, { passive: false });
   document.addEventListener("pointerup", finishDrag);

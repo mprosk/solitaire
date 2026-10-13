@@ -20,5 +20,5 @@ http://127.0.0.1:8888/aunt-ellas-cross/?sw=off
 `?sw=off` unregisters the service worker on your browser and remembers the opt-out;
 `?sw=on` re-enables.
 
-Drag a card to its destination, or double-click it to send it to its up pile. Rules are under
-**How to play** in the game menu.
+Drag a card to its destination, or double-click it to send it to its up pile (else onto a
+cross stack it fits). Rules are under **How to play** in the game menu.
