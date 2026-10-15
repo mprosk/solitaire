@@ -56,7 +56,7 @@
   let transientStatus = null;
   let dragSession = null;
   let suppressCardClickUntil = 0;
-  let wasteLongPress = null;
+  let stackLongPress = null;
   let wasteClickTimer = null;
   let wastePreviewOpenedAt = 0;
   let options = loadOptions();
@@ -416,13 +416,9 @@
     return (rank + 1) % RANKS.length;
   }
 
-  function isRed(card) {
-    return SUITS[card.suit].color === "red";
-  }
-
-  /** One rank lower (2–A–K wraps) in the other color. */
+  /** One rank lower (2–A–K wraps), any suit. */
   function canJoinCross(card, destinationCard) {
-    return rankBelow(destinationCard.rank) === card.rank && isRed(card) !== isRed(destinationCard);
+    return rankBelow(destinationCard.rank) === card.rank;
   }
 
   function canJoinFoundationPile(card, pile) {
@@ -477,7 +473,7 @@
     }
     return canJoinCross(card, topOf(pile))
       ? null
-      : "Those cards do not join in immediate descending, alternating-color order.";
+      : "That card is not one rank below the stack’s top card.";
   }
 
   function moveCard(source, destination) {
@@ -805,17 +801,35 @@
     }
   }
 
-  function showWasteStack() {
-    if (!state.waste.length) return;
-    const wasteRect = elements.waste.getBoundingClientRect();
+  /** Fan out every card in a pile (the revealed pile or a cross stack) over the board. */
+  function showStack(source) {
+    const pile = sourcePile(source);
+    if (!pile.length) return;
+    const origin =
+      source.type === "waste" ? elements.waste : elements.cross.children[source.index];
+    const originRect = origin.getBoundingClientRect();
     const overlap = window.matchMedia("(max-width: 620px)").matches
-      ? Math.max(wasteRect.width * 0.62, 25)
-      : Math.max(wasteRect.width * 0.4, 21);
+      ? Math.max(originRect.width * 0.62, 25)
+      : Math.max(originRect.width * 0.4, 21);
     // Cap entry travel so late-game piles don't animate thousands of px.
     const maxEntry = Math.min(overlap * 6, 120);
+    // Lift the fan when it would run off the bottom (the cross's lower stack).
+    const fanHeight = (pile.length - 1) * overlap + originRect.height;
+    const top = Math.max(12, Math.min(originRect.top, window.innerHeight - 12 - fanHeight));
 
-    elements.wastePreview.style.setProperty("--waste-left", `${wasteRect.left}px`);
-    elements.wastePreview.style.setProperty("--waste-top", `${wasteRect.top}px`);
+    // Cross cards are larger than the top row's; carry the origin's sizes along.
+    const sizes = getComputedStyle(origin);
+    ["--card-width", "--card-height", "--corner-font-size"].forEach((name) => {
+      elements.wastePreview.style.setProperty(name, sizes.getPropertyValue(name));
+    });
+    elements.wastePreview.setAttribute(
+      "aria-label",
+      source.type === "waste"
+        ? "Revealed cards, top card fully exposed"
+        : `${CROSS_NAMES[source.index]} stack, top card fully exposed`,
+    );
+    elements.wastePreview.style.setProperty("--waste-left", `${originRect.left}px`);
+    elements.wastePreview.style.setProperty("--waste-top", `${top}px`);
     elements.wasteCards.replaceChildren();
     elements.wastePreview.hidden = false;
     wastePreviewOpenedAt = Date.now();
@@ -825,7 +839,7 @@
       if (elements.wastePreview.hidden) return;
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const fragment = document.createDocumentFragment();
-      state.waste.forEach((card, index) => {
+      pile.forEach((card, index) => {
         const wrap = document.createElement("div");
         wrap.className = "waste-card-wrap";
         wrap.setAttribute("role", "listitem");
@@ -846,14 +860,14 @@
     });
   }
 
-  function closeWasteStack() {
+  function closeStack() {
     elements.wastePreview.hidden = true;
   }
 
-  function cancelWasteLongPress() {
-    if (!wasteLongPress) return;
-    window.clearTimeout(wasteLongPress.timer);
-    wasteLongPress = null;
+  function cancelStackLongPress() {
+    if (!stackLongPress) return;
+    window.clearTimeout(stackLongPress.timer);
+    stackLongPress = null;
   }
 
   function cancelWasteClick() {
@@ -862,18 +876,21 @@
     wasteClickTimer = null;
   }
 
-  function startWasteLongPress(event) {
-    if (state.gameOver || !state.waste.length || event.button !== 0) return;
-    cancelWasteLongPress();
+  /** Long-press the revealed pile or a cross stack to view every card in it. */
+  function startStackLongPress(event) {
+    if (state.gameOver || event.button !== 0) return;
+    const source = sourceFromElement(event.target);
+    if (!source || source.type === "foundation") return;
+    cancelStackLongPress();
     const pointerId = event.pointerId;
-    wasteLongPress = {
+    stackLongPress = {
       pointerId,
       timer: window.setTimeout(() => {
-        if (!wasteLongPress || wasteLongPress.pointerId !== pointerId) return;
+        if (!stackLongPress || stackLongPress.pointerId !== pointerId) return;
         suppressCardClickUntil = Date.now() + 500;
         if (dragSession?.pointerId === pointerId) cleanUpDrag();
-        wasteLongPress = null;
-        showWasteStack();
+        stackLongPress = null;
+        showStack(source);
       }, 550),
     };
   }
@@ -924,7 +941,7 @@
       event.clientX - dragSession.startX,
       event.clientY - dragSession.startY,
     );
-    if (distance >= 7) cancelWasteLongPress();
+    if (distance >= 7) cancelStackLongPress();
     if (!dragSession.ghost && distance < 7) return;
 
     event.preventDefault();
@@ -975,7 +992,7 @@
 
   function finishDrag(event) {
     if (!dragSession || dragSession.pointerId !== event.pointerId) return;
-    cancelWasteLongPress();
+    cancelStackLongPress();
     if (!dragSession.ghost) {
       // A tap: the click handlers take it from here.
       cleanUpDrag();
@@ -1008,7 +1025,7 @@
   }
 
   function cancelDrag(event) {
-    cancelWasteLongPress();
+    cancelStackLongPress();
     if (dragSession?.pointerId === event.pointerId) cleanUpDrag();
   }
 
@@ -1033,7 +1050,7 @@
     if (state.gameOver || !state.waste.length) return;
     if (event.target.closest(".pile-count")) {
       cancelWasteClick();
-      showWasteStack();
+      showStack({ type: "waste" });
       return;
     }
     cancelWasteClick();
@@ -1049,11 +1066,20 @@
     if (Date.now() < suppressCardClickUntil || state.gameOver || !state.waste.length) return;
     autoMove({ type: "waste" });
   });
-  elements.waste.addEventListener("pointerdown", startWasteLongPress);
-  elements.waste.addEventListener("contextmenu", (event) => event.preventDefault());
+  [elements.waste, elements.cross].forEach((element) => {
+    element.addEventListener("pointerdown", startStackLongPress);
+    element.addEventListener("contextmenu", (event) => event.preventDefault());
+  });
   [elements.waste, elements.cross, elements.foundations].forEach((element) =>
     element.addEventListener("pointerdown", startDrag),
   );
+  elements.cross.addEventListener("click", (event) => {
+    if (isSuppressedClick(event) || state.gameOver) return;
+    const pile = event.target.closest("[data-cross]");
+    if (pile && event.target.closest(".pile-count")) {
+      showStack({ type: "cross", index: Number(pile.dataset.cross) });
+    }
+  });
   elements.cross.addEventListener("dblclick", (event) => {
     const pile = event.target.closest("[data-cross]");
     if (!pile || Date.now() < suppressCardClickUntil) return;
@@ -1126,11 +1152,11 @@
     undo();
   });
   elements.wastePreview.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeWasteStack();
+    if (event.key === "Escape") closeStack();
   });
   document.addEventListener("click", () => {
     if (!elements.wastePreview.hidden && Date.now() - wastePreviewOpenedAt > 150) {
-      closeWasteStack();
+      closeStack();
     }
   });
   elements.resultNewGame.addEventListener("click", requestNewGame);

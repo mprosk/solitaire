@@ -443,7 +443,8 @@ main[data-deck-position="upper-right"] .foundation-zone {
   border-radius: 10px;
 }
 
-#waste .pile-count {
+#waste .pile-count,
+.cross-pile .pile-count {
   bottom: 5px;
   cursor: zoom-in;
 }
