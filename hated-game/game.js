@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v2.6";
+  const VERSION = "v2.7";
   const GAME_SLUG = "hated-game";
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
@@ -73,7 +73,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.6";
+    link.href = "../lib/guygames-ui.css?v=2.7";
     document.head.append(link);
   }
 
