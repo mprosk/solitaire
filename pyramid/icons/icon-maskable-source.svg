@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="16" height="28">
+      <rect width="16" height="28" fill="#7a1622"/>
+      <polygon points="8,0 12,7 8,14 4,7" fill="#a3323f"/>
+      <polygon points="0,14 4,21 0,28 -4,21" fill="#a3323f"/>
+      <polygon points="16,14 20,21 16,28 12,21" fill="#a3323f"/>
+      <polygon points="8,14 12,21 8,28 4,21" fill="#a3323f"/>
+      <polygon points="0,0 4,7 0,14 -4,7" fill="#c4535f"/>
+      <polygon points="16,0 20,7 16,14 12,7" fill="#c4535f"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <g id="back">
+      <rect width="76" height="106" rx="6.6" fill="#f3e9d5"/>
+      <rect x="4.1" y="4.1" width="67.8" height="97.8" rx="4.6"
+            fill="url(#cardBack)" stroke="#7a1622" stroke-width="1.5"/>
+    </g>
+  </defs>
+
+  <!-- Felt background fills the whole canvas so any mask shape looks clean -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!--
+    The pyramid: three rows of face-down red cards (76 x 106, 8px gutter),
+    overlapping so the sides slope at 60 degrees. Corners stay inside the 205px maskable safe zone.
+  -->
+  <use href="#back" x="218.0" y="130.3" filter="url(#shadow)"/>
+  <use href="#back" x="176.0" y="203.0" filter="url(#shadow)"/>
+  <use href="#back" x="260.0" y="203.0" filter="url(#shadow)"/>
+  <use href="#back" x="134.0" y="275.7" filter="url(#shadow)"/>
+  <use href="#back" x="218.0" y="275.7" filter="url(#shadow)"/>
+  <use href="#back" x="302.0" y="275.7" filter="url(#shadow)"/>
+</svg>
