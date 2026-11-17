@@ -734,7 +734,10 @@
 
   async function showResult(result) {
     // With the alert off, the board's New game button and status line mark the end.
-    if (!options.alertOnGameOver) return;
+    if (!options.alertOnGameOver) {
+      if (result === "win") celebrate();
+      return;
+    }
     const won = result === "win";
     elements.resultSymbol.textContent = won ? "♛" : "♠";
     elements.resultTitle.textContent = won ? "You won!" : "Game over";
@@ -760,6 +763,14 @@
     }
 
     openDialog(elements.result);
+    // After the dialog opens so the confetti layer stacks above it.
+    if (won) celebrate();
+  }
+
+  function celebrate() {
+    void import("../lib/confetti.js")
+      .then(({ launchConfetti }) => launchConfetti(elements.board))
+      .catch(() => {});
   }
 
   function openDialog(dialog) {
