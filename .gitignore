@@ -5,3 +5,6 @@ __pycache__/
 certs/
 build.json
 _site/
+_email-preview/
+supabase/.temp/
+supabase/functions/.env

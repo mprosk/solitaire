@@ -1,0 +1,345 @@
+{
+  "weekly": [
+    {
+      "screen_name": "Jordan",
+      "week_start": "2026-11-09",
+      "week_end": "2026-11-15",
+      "unsubscribe_token": "00000000-0000-4000-8000-000000000001",
+      "totals": {
+        "games": 64,
+        "wins": 9,
+        "days": 5
+      },
+      "previous_week": {
+        "games": 51,
+        "wins": 11
+      },
+      "days_played": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "games": [
+        {
+          "slug": "hated-game",
+          "name": "The Hated Game",
+          "games": 38,
+          "wins": 6,
+          "best_score": 52,
+          "full_score": 52,
+          "rank": 2,
+          "rank_before": 3,
+          "players": 8
+        },
+        {
+          "slug": "pyramid",
+          "name": "Pyramid",
+          "games": 19,
+          "wins": 3,
+          "best_score": 28,
+          "full_score": 28,
+          "rank": 4,
+          "rank_before": 3,
+          "players": 6
+        },
+        {
+          "slug": "picture-frame",
+          "name": "Picture Frame",
+          "games": 7,
+          "wins": 0,
+          "best_score": 33,
+          "full_score": 40,
+          "rank": 5,
+          "rank_before": 5,
+          "players": 7
+        }
+      ],
+      "all_time": {
+        "games": 812,
+        "wins": 97
+      },
+      "table": {
+        "games": 540,
+        "players": 6,
+        "leaders": [
+          {
+            "name": "Riley",
+            "games": 201,
+            "wins": 14
+          },
+          {
+            "name": "Casey",
+            "games": 150,
+            "wins": 28
+          },
+          {
+            "name": "Jordan",
+            "games": 64,
+            "wins": 9
+          }
+        ]
+      },
+      "leaderboards": [
+        {
+          "slug": "hated-game",
+          "name": "The Hated Game",
+          "rank": 2,
+          "players": 8,
+          "wins": 88,
+          "games": 610,
+          "leader": {
+            "name": "Casey",
+            "wins": 141,
+            "games": 702
+          },
+          "above": {
+            "name": "Casey",
+            "wins": 141,
+            "games": 702
+          },
+          "below": {
+            "name": "Riley",
+            "wins": 86,
+            "games": 930
+          },
+          "rank_before": 2
+        },
+        {
+          "slug": "larrys-game",
+          "name": "Larry’s Game",
+          "rank": 1,
+          "players": 7,
+          "wins": 31,
+          "games": 120,
+          "leader": null,
+          "above": null,
+          "below": {
+            "name": "Casey",
+            "wins": 29,
+            "games": 140
+          },
+          "rank_before": 1
+        },
+        {
+          "slug": "pyramid",
+          "name": "Pyramid",
+          "rank": 4,
+          "players": 6,
+          "wins": 9,
+          "games": 75,
+          "leader": {
+            "name": "Riley",
+            "wins": 30,
+            "games": 300
+          },
+          "above": {
+            "name": "Casey",
+            "wins": 11,
+            "games": 40
+          },
+          "below": {
+            "name": "Morgan",
+            "wins": 4,
+            "games": 38
+          },
+          "rank_before": 3
+        },
+        {
+          "slug": "picture-frame",
+          "name": "Picture Frame",
+          "rank": 5,
+          "players": 7,
+          "wins": 3,
+          "games": 33,
+          "leader": {
+            "name": "Riley",
+            "wins": 25,
+            "games": 110
+          },
+          "above": {
+            "name": "Morgan",
+            "wins": 9,
+            "games": 51
+          },
+          "below": {
+            "name": "Pat",
+            "wins": 0,
+            "games": 4
+          },
+          "rank_before": 5
+        },
+        {
+          "slug": "aunt-ellas-cross",
+          "name": "Aunt Ella’s Cross",
+          "rank": 2,
+          "rank_before": 1,
+          "players": 6,
+          "wins": 18,
+          "games": 50,
+          "leader": {
+            "name": "Riley",
+            "wins": 19,
+            "games": 61
+          },
+          "above": {
+            "name": "Riley",
+            "wins": 19,
+            "games": 61
+          },
+          "below": {
+            "name": "Casey",
+            "wins": 7,
+            "games": 40
+          }
+        }
+      ]
+    },
+    {
+      "screen_name": "Pat",
+      "week_start": "2026-11-09",
+      "week_end": "2026-11-15",
+      "unsubscribe_token": "00000000-0000-4000-8000-000000000002",
+      "totals": {
+        "games": 3,
+        "wins": 0,
+        "days": 1
+      },
+      "previous_week": {
+        "games": 0,
+        "wins": 0
+      },
+      "days_played": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "games": [
+        {
+          "slug": "larrys-game",
+          "name": "Larry’s Game",
+          "games": 3,
+          "wins": 0,
+          "best_score": 41,
+          "full_score": 52,
+          "rank": null,
+          "rank_before": null,
+          "players": null
+        }
+      ],
+      "all_time": {
+        "games": 3,
+        "wins": 0
+      },
+      "table": {
+        "games": 540,
+        "players": 6,
+        "leaders": [
+          {
+            "name": "Riley",
+            "games": 201,
+            "wins": 14
+          },
+          {
+            "name": "Casey",
+            "games": 150,
+            "wins": 28
+          },
+          {
+            "name": "Jordan",
+            "games": 64,
+            "wins": 9
+          }
+        ]
+      },
+      "leaderboards": []
+    }
+  ],
+  "missed": [
+    {
+      "screen_name": "Sam",
+      "last_played": "2026-10-28",
+      "days_away": 20,
+      "unsubscribe_token": "00000000-0000-4000-8000-000000000003",
+      "all_time": {
+        "games": 230,
+        "wins": 31
+      },
+      "favorite_game": {
+        "slug": "hated-game",
+        "name": "The Hated Game",
+        "games": 160
+      },
+      "since": {
+        "games": 1210,
+        "players": 5
+      },
+      "standings": [
+        {
+          "slug": "hated-game",
+          "name": "The Hated Game",
+          "rank_then": 3,
+          "rank_now": 4,
+          "players": 8,
+          "passed_by": [
+            "Riley"
+          ]
+        },
+        {
+          "slug": "larrys-game",
+          "name": "Larry’s Game",
+          "rank_then": 2,
+          "rank_now": 2,
+          "players": 7,
+          "passed_by": []
+        }
+      ],
+      "new_games": [
+        {
+          "slug": "pyramid",
+          "name": "Pyramid"
+        }
+      ]
+    }
+  ],
+  "lost": [
+    {
+      "screen_name": "Jordan",
+      "day": "2026-11-16",
+      "unsubscribe_token": "00000000-0000-4000-8000-000000000004",
+      "games": [
+        {
+          "slug": "aunt-ellas-cross",
+          "name": "Aunt Ella’s Cross",
+          "rank": 2,
+          "rank_before": 1,
+          "players": 6,
+          "wins": 18,
+          "games": 50,
+          "leader": {
+            "name": "Riley",
+            "wins": 19,
+            "games": 61
+          },
+          "above": {
+            "name": "Riley",
+            "wins": 19,
+            "games": 61
+          },
+          "below": {
+            "name": "Casey",
+            "wins": 7,
+            "games": 40
+          }
+        }
+      ]
+    }
+  ]
+}
