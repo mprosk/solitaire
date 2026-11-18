@@ -19,8 +19,15 @@
   const CARD_COUNT = 52;
   /** Cross stacks in DOM order; the stylesheet places them by nth-child. */
   const CROSS_NAMES = ["Top", "Left", "Center", "Right", "Bottom"];
-  /** Positions the end-of-game search may visit before it assumes a move remains. */
-  const SEARCH_LIMIT = 20000;
+  /**
+   * End-of-game search budgets (positions visited). In simulations every deal with a
+   * scoring move left found it within ~15k positions; only stuck deals need more, so
+   * hitting the worker's cap means the deal is over. The inline fallback (no workers)
+   * keeps the main thread snappy with a small cap and assumes a move when it runs out.
+   */
+  const WORKER_SEARCH_LIMIT = 400000;
+  const INLINE_SEARCH_LIMIT = 20000;
+  const HINT_STATUS = "There’s still a way to score: try moving cards between stacks, or taking a card back down.";
 
   const elements = {
     board: document.querySelector("main"),
@@ -58,6 +65,15 @@
   let suppressCardClickUntil = 0;
   let stackLongPress = null;
   let wasteClickTimer = null;
+  /** Bumped whenever the position changes, so a stale search answer is ignored. */
+  let searchId = 0;
+  /** @type {Worker | null} */
+  let searchWorker = null;
+  let searchWorkerBusy = false;
+  let searchWorkerFailed = false;
+  /** Set when the deck is out, nothing obvious is left, but a scoring sequence exists. */
+  let hint = null;
+  let hintTimer = null;
   let wastePreviewOpenedAt = 0;
   let options = loadOptions();
   let dealResultId = crypto.randomUUID();
@@ -261,6 +277,7 @@
       dealResultId = saved.dealResultId || crypto.randomUUID();
       dealResultSubmitted = Boolean(saved.dealResultSubmitted);
       transientStatus = null;
+      evaluateGame();
       render();
       return true;
     } catch {
@@ -361,6 +378,7 @@
   }
 
   function startNewGame() {
+    cancelSearch();
     state = dealGame();
     originalDeal = clone(state);
     history = [];
@@ -373,6 +391,7 @@
   }
 
   function restartGame() {
+    cancelSearch();
     state = clone(originalDeal);
     history = [];
     transientStatus = null;
@@ -401,6 +420,7 @@
     transientStatus = null;
     closeMenu();
     closeDialog(elements.result);
+    evaluateGame();
     render();
   }
 
@@ -548,83 +568,91 @@
   }
 
   /**
-   * Whether play can still get anywhere once the deck is out: put a card up past the
-   * current score, or place the revealed card. Searches the reversible moves (stack to
-   * stack, and up piles back down) for a position that allows either.
+   * A move anyone would see: a card that can go up, or a place for the revealed card.
+   * While one exists (or the deck still has cards) there's no need to search.
    */
-  function hasProductiveMove() {
-    // While the deck lasts there is always a turn or a fill to make.
+  function hasObviousMove() {
     if (state.stock.length) return true;
-
-    const startScore = score();
-    const wasteCard = topOf(state.waste);
-    const keyOf = (position) =>
-      `${position.cross.map((pile) => pile.map((card) => card.id).join(",")).join("|")}/${position.foundations
-        .map((pile) => pile.length)
-        .join(",")}`;
-    const first = { cross: state.cross, foundations: state.foundations };
-    const seen = new Set([keyOf(first)]);
-    const pending = [first];
-
-    while (pending.length) {
-      if (seen.size > SEARCH_LIMIT) return true;
-      const { cross, foundations } = pending.pop();
-      const upCount = foundations.reduce((total, pile) => total + pile.length, 0);
-      const next = [];
-
-      if (wasteCard) {
-        if (canJoinFoundationPile(wasteCard, foundations[wasteCard.suit])) return true;
-        if (cross.some((pile) => !pile.length || canJoinCross(wasteCard, topOf(pile)))) return true;
-      }
-
-      cross.forEach((pile, from) => {
-        const card = topOf(pile);
-        if (!card) return;
-        if (canJoinFoundationPile(card, foundations[card.suit])) {
-          if (upCount + 1 > startScore) next.push(null);
-          const up = foundations.slice();
-          up[card.suit] = [...up[card.suit], card];
-          const down = cross.slice();
-          down[from] = pile.slice(0, -1);
-          next.push({ cross: down, foundations: up });
-        }
-        cross.forEach((target, to) => {
-          if (to === from) return;
-          // A lone card into an empty spot only moves the hole.
-          const fits = target.length ? canJoinCross(card, topOf(target)) : pile.length > 1;
-          if (!fits) return;
-          const moved = cross.slice();
-          moved[from] = pile.slice(0, -1);
-          moved[to] = [...target, card];
-          next.push({ cross: moved, foundations });
-        });
-      });
-
-      foundations.forEach((pile, suit) => {
-        const card = topOf(pile);
-        if (!card) return;
-        cross.forEach((target, to) => {
-          if (!target.length || !canJoinCross(card, topOf(target))) return;
-          const up = foundations.slice();
-          up[suit] = pile.slice(0, -1);
-          const moved = cross.slice();
-          moved[to] = [...target, card];
-          next.push({ cross: moved, foundations: up });
-        });
-      });
-
-      for (const position of next) {
-        if (!position) return true;
-        const key = keyOf(position);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        pending.push(position);
-      }
+    if (state.cross.some((pile) => pile.length && canJoinFoundation(topOf(pile), topOf(pile).suit))) {
+      return true;
     }
-    return false;
+    const wasteCard = topOf(state.waste);
+    if (!wasteCard) return false;
+    if (canJoinFoundation(wasteCard, wasteCard.suit)) return true;
+    return state.cross.some((pile) => !pile.length || canJoinCross(wasteCard, topOf(pile)));
+  }
+
+  /** Drop any search in flight; a busy worker is terminated so it stops using CPU. */
+  function cancelSearch() {
+    searchId += 1;
+    hint = null;
+    if (searchWorker && searchWorkerBusy) {
+      searchWorker.terminate();
+      searchWorker = null;
+      searchWorkerBusy = false;
+    }
+  }
+
+  /** Run the deep end-of-game search off the main thread; answer lands in finishSearch. */
+  function requestSearch() {
+    const id = ++searchId;
+    const run = async () => {
+      const { encodePosition, findScoringMove } = await import("./move-search.js");
+      const position = encodePosition(state);
+      if (!searchWorkerFailed && typeof Worker === "function") {
+        try {
+          if (!searchWorker) {
+            searchWorker = new Worker(new URL("./move-search-worker.js", import.meta.url), {
+              type: "module",
+            });
+            searchWorker.addEventListener("message", (event) => {
+              searchWorkerBusy = false;
+              // Hitting the worker's cap only happens on stuck deals: treat it as over.
+              finishSearch(event.data.id, {
+                found: event.data.found && !event.data.capped,
+                move: event.data.move,
+              });
+            });
+            searchWorker.addEventListener("error", () => {
+              // Module workers unsupported or the file failed to load: search inline.
+              searchWorkerFailed = true;
+              searchWorkerBusy = false;
+              searchWorker = null;
+              if (id === searchId) requestSearch();
+            });
+          }
+          searchWorkerBusy = true;
+          searchWorker.postMessage({ id, position, limit: WORKER_SEARCH_LIMIT });
+          return;
+        } catch {
+          searchWorkerFailed = true;
+        }
+      }
+      // Inline fallback: small budget, and running out means "assume a move remains".
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      if (id !== searchId) return;
+      const result = findScoringMove(position, INLINE_SEARCH_LIMIT);
+      finishSearch(id, result.capped ? { found: true, move: null } : result);
+    };
+    void run().catch(() => {});
+  }
+
+  /** @param {number} id @param {{ found: boolean, move: object | null }} result */
+  function finishSearch(id, result) {
+    if (id !== searchId || !state || state.gameOver) return;
+    if (!result.found) {
+      state.gameOver = "loss";
+      void submitDealOutcome("loss");
+      showResult("loss");
+      render();
+      return;
+    }
+    hint = result.move ? { move: result.move } : null;
+    render();
   }
 
   function evaluateGame() {
+    cancelSearch();
     if (state.gameOver) return;
     if (score() === CARD_COUNT) {
       state.gameOver = "win";
@@ -632,16 +660,14 @@
       showResult("win");
       return;
     }
-    if (!hasProductiveMove()) {
-      state.gameOver = "loss";
-      void submitDealOutcome("loss");
-      showResult("loss");
-    }
+    // Only search when nothing obvious is left; most turns stop here.
+    if (!hasObviousMove()) requestSearch();
   }
 
   function defaultStatus() {
     if (state.gameOver === "win") return "You won the deal.";
     if (state.gameOver) return "No scoring moves remain.";
+    if (hint) return HINT_STATUS;
     if (state.stock.length && state.waste.length && emptyCrossIndex() !== -1) return FILL_STATUS;
     return DEFAULT_STATUS;
   }
@@ -726,14 +752,47 @@
   }
 
   function render() {
+    clearHintHighlight();
     elements.score.textContent = String(score());
     elements.boardNewGame.hidden = !state.gameOver;
     elements.status.textContent = transientStatus ?? defaultStatus();
+    if (!transientStatus && hint?.move && !state.gameOver) {
+      const showMe = document.createElement("button");
+      showMe.type = "button";
+      showMe.className = "status-hint";
+      showMe.textContent = "Show me";
+      showMe.addEventListener("click", showHint);
+      elements.status.append(" ", showMe);
+    }
     elements.undo.disabled = history.length === 0;
     renderStock();
     renderFoundations();
     renderCross();
     persistGame();
+  }
+
+  /** @param {{ type: string, index?: number }} spot */
+  function spotElement(spot) {
+    if (spot.type === "waste") return elements.waste;
+    if (spot.type === "cross") return elements.cross.querySelector(`[data-cross="${spot.index}"]`);
+    return elements.foundations.querySelector(`[data-foundation="${spot.index}"]`);
+  }
+
+  /** Outline the card to move and where it goes, for a few seconds. */
+  function showHint() {
+    if (!hint?.move) return;
+    clearHintHighlight();
+    spotElement(hint.move.from)?.classList.add("hint-from");
+    spotElement(hint.move.to)?.classList.add("hint-to");
+    hintTimer = window.setTimeout(clearHintHighlight, 2600);
+  }
+
+  function clearHintHighlight() {
+    window.clearTimeout(hintTimer);
+    hintTimer = null;
+    document.querySelectorAll(".hint-from, .hint-to").forEach((element) => {
+      element.classList.remove("hint-from", "hint-to");
+    });
   }
 
   function setStatus(message) {

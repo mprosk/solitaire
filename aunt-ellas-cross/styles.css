@@ -1018,3 +1018,47 @@ dialog::backdrop {
     animation: none;
   }
 }
+
+/* "Show me": appears in the status line when only a non-obvious scoring move is left. */
+.status-hint {
+  padding: 2px 4px;
+  color: var(--gold);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.status-hint:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The suggested move: the card to move and where it goes. */
+.hint-from,
+.hint-to {
+  outline: 4px solid var(--gold);
+  outline-offset: 2px;
+  animation: hint-pulse 0.85s ease-in-out 3;
+}
+
+.hint-to {
+  outline-style: dashed;
+}
+
+@keyframes hint-pulse {
+  50% {
+    outline-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-from,
+  .hint-to {
+    animation: none;
+  }
+}
