@@ -623,6 +623,7 @@ main[data-deck-position="lower-right"] .pile-group {
 }
 
 .gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-account-btn[hidden],
 .gg-menu-auth .gg-logout-btn[hidden] {
   display: none;
 }

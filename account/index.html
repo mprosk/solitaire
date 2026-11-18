@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- frame-ancestors / HSTS can't go in a meta tag; Cloudflare sets those headers. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://oxcrkikwjushtszpdigq.supabase.co wss://oxcrkikwjushtszpdigq.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123d2c" />
+    <meta name="robots" content="noindex" />
+    <title>Account · GuyGames Solitaire</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="../styles.css?v=2.9" />
+    <link rel="stylesheet" href="../lib/guygames-ui.css?v=2.9" />
+    <link rel="stylesheet" href="account.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="icon-button" href="../" aria-label="Back to games">
+        <span class="back-glyph" aria-hidden="true"></span>
+      </a>
+      <h1>Account</h1>
+      <span class="topbar-spacer" aria-hidden="true"></span>
+    </header>
+
+    <main class="account-main">
+      <section class="account-card" data-unsubscribe hidden aria-live="polite">
+        <p class="account-unsub-message" data-unsubscribe-message>Updating your email settings…</p>
+        <button type="button" class="account-secondary" data-unsubscribe-undo hidden>Undo</button>
+      </section>
+
+      <section class="account-card" data-signed-out hidden>
+        <h2>Your account</h2>
+        <p class="account-note">Log in to change your username and which emails you get.</p>
+        <div class="gg-menu-auth">
+          <button id="account-login" class="primary-button gg-login-btn" type="button">Log In</button>
+        </div>
+      </section>
+
+      <div data-signed-in hidden>
+        <section class="account-card">
+          <h2>Username</h2>
+          <form id="account-name-form" class="account-name-form" novalidate>
+            <div class="gg-field">
+              <label for="account-name">How you appear on the leaderboard</label>
+              <input
+                id="account-name"
+                name="screen_name"
+                type="text"
+                minlength="2"
+                maxlength="24"
+                required
+                autocomplete="nickname"
+              />
+            </div>
+            <p class="gg-form-error" data-name-error hidden></p>
+            <p class="account-saved" data-name-saved hidden>Saved</p>
+            <button type="submit" class="primary-button gg-primary">Save username</button>
+          </form>
+        </section>
+
+        <section class="account-card">
+          <h2>Emails</h2>
+          <p class="account-note">Sent to <span data-account-email></span></p>
+          <ul class="account-toggles">
+            <li>
+              <label class="account-toggle">
+                <span class="account-toggle-text">
+                  <span class="account-toggle-title">Weekly summary</span>
+                  <span class="account-toggle-hint">Mondays, after a week you played: your games, wins, and rank.</span>
+                </span>
+                <input type="checkbox" role="switch" name="weekly_summary" disabled />
+              </label>
+            </li>
+            <li>
+              <label class="account-toggle">
+                <span class="account-toggle-text">
+                  <span class="account-toggle-title">We’ve missed you</span>
+                  <span class="account-toggle-hint">Once, if you haven’t played in 10 days.</span>
+                </span>
+                <input type="checkbox" role="switch" name="missed_you" disabled />
+              </label>
+            </li>
+            <li>
+              <label class="account-toggle">
+                <span class="account-toggle-text">
+                  <span class="account-toggle-title">Leaderboard alerts</span>
+                  <span class="account-toggle-hint">When someone takes your top spot on a leaderboard. At most once a day.</span>
+                </span>
+                <input type="checkbox" role="switch" name="leaderboard_alerts" disabled />
+              </label>
+            </li>
+          </ul>
+          <p class="gg-form-error" data-email-error hidden></p>
+          <p class="account-saved" data-email-saved hidden>Saved</p>
+        </section>
+
+        <section class="account-card account-signout">
+          <div class="gg-menu-auth">
+            <button id="account-logout" class="primary-button gg-logout-btn" type="button">Log Out</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- No sw-register here: the site root's service worker already covers /account/. -->
+    <script type="module" src="account.js"></script>
+  </body>
+</html>

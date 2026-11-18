@@ -27,6 +27,7 @@
 }
 
 .gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-account-btn[hidden],
 .gg-menu-auth .gg-logout-btn[hidden] {
   display: none;
 }
@@ -41,6 +42,15 @@
 
 .gg-screen-name[hidden] {
   display: none;
+}
+
+/* The signed-in player's name, above Account / Log Out. */
+.gg-screen-name strong {
+  color: var(--ink, #19201d);
+  font-family: Georgia, "Times New Roman", ui-serif, serif;
+  font-size: 1.25em;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .gg-field {

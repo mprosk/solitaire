@@ -336,6 +336,7 @@ a.game-link:focus-visible {
 }
 
 .gg-menu-auth .gg-login-btn[hidden],
+.gg-menu-auth .gg-account-btn[hidden],
 .gg-menu-auth .gg-logout-btn[hidden] {
   display: none;
 }
