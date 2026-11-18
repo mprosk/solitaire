@@ -55,6 +55,11 @@
 
 .gg-field input,
 .gg-field select {
+  /* Grid items won't shrink below an input's intrinsic width (bigger for the
+     letter-spaced OTP field), which pushed it past the dialog's edge. */
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   min-height: 44px;
   padding: 10px 12px;
   color: var(--ink, #19201d);
