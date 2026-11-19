@@ -348,7 +348,7 @@ export function renderWeeklySummary(p: WeeklyPayload, links: Links): RenderedEma
   const { games, wins, days } = p.totals;
   const prev = p.previous_week;
 
-  const subject = `Your week: ${plural(games, "game")}, ${plural(wins, "win")}`;
+  const subject = `Your week on Guy Games: ${plural(games, "game")}, ${plural(wins, "win")}`;
   const winsClause = wins > 0 ? ` and won ${n(wins)}` : "";
   const when = days >= 7 ? "every day this week" : `on ${plural(days, "day")} this week`;
   const summary = `You played ${plural(games, "game")} ${when}${winsClause}.`;
