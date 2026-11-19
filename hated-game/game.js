@@ -9,7 +9,7 @@
   ];
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card or stack to where it should go.";
-  const VERSION = "v2.10";
+  const VERSION = "v2.11";
   const GAME_SLUG = "hated-game";
   const STORAGE_KEY = "hated-game:save-v1";
   const OPTIONS_KEY = "hated-game:options-v1";
@@ -73,7 +73,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.10";
+    link.href = "../lib/guygames-ui.css?v=2.11";
     document.head.append(link);
   }
 
@@ -314,7 +314,8 @@
       } = await supabaseApi.getSession();
       if (!session) return;
       const { error } = await supabaseApi.insertGameResult(payload);
-      if (!error && clientResultId === dealResultId) {
+      // Only while the deal is still over: undo or restart may have reopened it mid-request.
+      if (!error && clientResultId === dealResultId && (state?.gameOver || state?.winDeclared)) {
         dealResultSubmitted = true;
         persistGame();
       }
@@ -394,10 +395,8 @@
     history = [];
     selection = null;
     transientStatus = DEFAULT_STATUS;
-    // Same deal / same client_result_id — only clear submitted if nothing was recorded yet.
-    if (!dealResultSubmitted) {
-      dealResultId = crypto.randomUUID();
-    }
+    // Same deal, same client_result_id: replaying it can only improve the recorded result.
+    dealResultSubmitted = false;
     closeMenu();
     closeDialog(elements.result);
     render();
@@ -452,6 +451,9 @@
     }
 
     state = previous;
+    // Undoing out of a game over reopens the deal: its next finish replaces the
+    // recorded result if it's better (record_game_result keeps the best).
+    dealResultSubmitted = false;
     selection = null;
     transientStatus = DEFAULT_STATUS;
     closeMenu();
