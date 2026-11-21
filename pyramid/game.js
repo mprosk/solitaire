@@ -1,6 +1,20 @@
 (() => {
   "use strict";
 
+  /**
+   * A random v4 UUID for each deal's result. randomUUID only exists on secure pages
+   * (HTTPS or localhost), so a phone testing over the LAN builds one from
+   * getRandomValues, which works everywhere.
+   */
+  function newResultId() {
+    if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
   const SUITS = [
     { symbol: "♠", name: "spades", color: "black" },
     { symbol: "♥", name: "hearts", color: "red" },
@@ -76,7 +90,7 @@
   let dragSession = null;
   let suppressCardClickUntil = 0;
   let options = loadOptions();
-  let dealResultId = crypto.randomUUID();
+  let dealResultId = newResultId();
   let dealResultSubmitted = false;
   /** client_result_id with an insert in flight, so auth events don't double-submit. */
   let submittingResultId = null;
@@ -275,7 +289,7 @@
       state = saved.state;
       originalDeal = saved.originalDeal;
       history = Array.isArray(saved.history) ? saved.history : [];
-      dealResultId = saved.dealResultId || crypto.randomUUID();
+      dealResultId = saved.dealResultId || newResultId();
       dealResultSubmitted = Boolean(saved.dealResultSubmitted);
       transientStatus = null;
       render();
@@ -381,7 +395,7 @@
     history = [];
     transientStatus = null;
     selected = null;
-    dealResultId = crypto.randomUUID();
+    dealResultId = newResultId();
     dealResultSubmitted = false;
     closeDialog(elements.result);
     closeMenu();
