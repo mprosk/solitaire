@@ -79,6 +79,7 @@
     undo: document.querySelector("#undo"),
     resultLoginPrompt: document.querySelector("#result-login-prompt"),
     resultLogin: document.querySelector("#result-login"),
+    resultLeaderboard: document.querySelector("#result-leaderboard"),
   };
 
   let state;
@@ -802,6 +803,8 @@
     } else if (elements.resultLoginPrompt) {
       elements.resultLoginPrompt.hidden = true;
     }
+    // A signed-in win is on the board now; signed out, the account prompt comes first.
+    elements.resultLeaderboard.hidden = !won || showLoginCta;
 
     openDialog(elements.result);
     // After the dialog opens so the confetti layer stacks above it.
@@ -874,6 +877,7 @@
       source,
       card,
       ghost: null,
+      dropTarget: null,
     };
     // Capture on the slot itself: capturing on #pyramid would retarget the tap's click there.
     (event.target.closest("[data-cell]") || elements.waste).setPointerCapture(event.pointerId);
@@ -902,10 +906,82 @@
     }
     dragSession.ghost.style.left = `${event.clientX - dragSession.grabX}px`;
     dragSession.ghost.style.top = `${event.clientY - dragSession.grabY}px`;
+    markDropTarget(intendedTarget(dragSession.source, dragSession.ghost.getBoundingClientRect()));
+  }
+
+  /** Every face-up card the dragged card could pair with right now. */
+  function pairTargets(source) {
+    const card = cardAt(source);
+    if (!card) return [];
+    const refs = ["waste", ...state.pyramid.map((_, index) => index)];
+    return refs.filter((ref) => {
+      const other = ref === source ? null : cardAt(ref);
+      return (
+        other && cardValue(card) + cardValue(other) === TARGET && canPairSpots(source, ref)
+      );
+    });
+  }
+
+  function overlapArea(a, b) {
+    const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    return width > 0 && height > 0 ? width * height : 0;
+  }
+
+  /**
+   * Where a drop is meant to go, read loosely: the valid partner the dragged card
+   * overlaps most, else the nearest one within reach of its center. With only one
+   * valid partner the reach is wider, since there's no one else it could mean.
+   * Returns null when no valid partner is plausibly meant.
+   */
+  function intendedTarget(source, ghostRect) {
+    const targets = pairTargets(source)
+      .map((ref) => ({ ref, rect: refCardElement(ref)?.getBoundingClientRect() }))
+      .filter((target) => target.rect);
+    if (!targets.length) return null;
+
+    let best = null;
+    let bestOverlap = 0;
+    for (const target of targets) {
+      const area = overlapArea(ghostRect, target.rect);
+      if (area > bestOverlap) {
+        best = target;
+        bestOverlap = area;
+      }
+    }
+    if (best) return best.ref;
+
+    const centerX = ghostRect.left + ghostRect.width / 2;
+    const centerY = ghostRect.top + ghostRect.height / 2;
+    const reach = ghostRect.width * (targets.length === 1 ? 2 : 1.25);
+    let nearest = null;
+    let nearestDistance = Infinity;
+    for (const target of targets) {
+      const distance = Math.hypot(
+        centerX - (target.rect.left + target.rect.width / 2),
+        centerY - (target.rect.top + target.rect.height / 2),
+      );
+      if (distance < nearestDistance) {
+        nearest = target;
+        nearestDistance = distance;
+      }
+    }
+    return nearestDistance <= reach ? nearest.ref : null;
+  }
+
+  /** Light up the card the drop would pair with, so the outcome shows before letting go. */
+  function markDropTarget(ref) {
+    if (dragSession.dropTarget === ref) return;
+    if (dragSession.dropTarget !== null) {
+      refCardElement(dragSession.dropTarget)?.classList.remove("drop-target");
+    }
+    dragSession.dropTarget = ref;
+    if (ref !== null) refCardElement(ref)?.classList.add("drop-target");
   }
 
   function cleanUpDrag() {
     if (!dragSession) return;
+    markDropTarget(null);
     dragSession.ghost?.remove();
     dragSession.card.classList.remove("drag-origin");
     document.body.classList.remove("dragging");
@@ -921,10 +997,13 @@
     }
 
     const { source } = dragSession;
+    const intended = intendedTarget(source, dragSession.ghost.getBoundingClientRect());
     suppressCardClickUntil = Date.now() + 250;
     cleanUpDrag();
 
-    // The ghost ignores pointer events, so this finds what sits under the finger.
+    if (intended !== null && tryPair(source, intended)) return;
+    // No valid partner nearby: whatever is under the finger (the ghost ignores pointer
+    // events) gets tryPair's explanation of why it can't pair.
     const target = refFromElement(document.elementFromPoint(event.clientX, event.clientY));
     if (target !== null && target !== source && tryPair(source, target)) return;
     render();
@@ -1020,6 +1099,12 @@
   elements.resultNewGame.addEventListener("click", requestNewGame);
   elements.boardNewGame.addEventListener("click", requestNewGame);
   elements.keepPlaying.addEventListener("click", () => closeDialog(elements.result));
+  elements.resultLeaderboard.addEventListener("click", () => {
+    closeDialog(elements.result);
+    void loadAuthFeatures().then(({ leaderboard: board }) => {
+      board.open({ gameSlug: GAME_SLUG });
+    });
+  });
   elements.resultLogin?.addEventListener("click", () => {
     closeDialog(elements.result);
     void loadAuthFeatures().then(({ account: auth }) => auth.openLogin({ title: "Create account" }));

@@ -69,6 +69,7 @@
     undo: document.querySelector("#undo"),
     resultLoginPrompt: document.querySelector("#result-login-prompt"),
     resultLogin: document.querySelector("#result-login"),
+    resultLeaderboard: document.querySelector("#result-leaderboard"),
   };
 
   let state;
@@ -871,6 +872,8 @@
     } else if (elements.resultLoginPrompt) {
       elements.resultLoginPrompt.hidden = true;
     }
+    // A signed-in win is on the board now; signed out, the account prompt comes first.
+    elements.resultLeaderboard.hidden = !won || showLoginCta;
 
     openDialog(elements.result);
     // After the dialog opens so the confetti layer stacks above it.
@@ -1274,6 +1277,12 @@
   elements.resultNewGame.addEventListener("click", requestNewGame);
   elements.boardNewGame.addEventListener("click", requestNewGame);
   elements.keepPlaying.addEventListener("click", () => closeDialog(elements.result));
+  elements.resultLeaderboard.addEventListener("click", () => {
+    closeDialog(elements.result);
+    void loadAuthFeatures().then(({ leaderboard: board }) => {
+      board.open({ gameSlug: GAME_SLUG });
+    });
+  });
   elements.resultLogin?.addEventListener("click", () => {
     closeDialog(elements.result);
     void loadAuthFeatures().then(({ account: auth }) => auth.openLogin({ title: "Create account" }));

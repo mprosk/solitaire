@@ -395,3 +395,27 @@ body.leaderboard-open {
 .gg-field[hidden] {
   display: none;
 }
+
+/* Win dialog: a quiet full-width link to the board the win just landed on. */
+.result-leaderboard {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 10px;
+  padding: 10px 16px;
+  color: var(--ink, #19201d);
+  font: inherit;
+  font-weight: 650;
+  background: transparent;
+  border: 1px solid #ddd5c4;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.result-leaderboard:hover {
+  background: #f3eee3;
+}
+
+.result-leaderboard[hidden] {
+  display: none;
+}

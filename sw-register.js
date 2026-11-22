@@ -1,7 +1,8 @@
 // Registers the site-wide service worker (sw.js, next to this file) and moves the page
 // onto a newly downloaded build at a moment that can't cost the player anything: a
 // game page says when through window.guyGamesCanUpdate (no deal in progress), and no
-// dialog may be open. Pages without the hook (the picker) can update any time.
+// dialog or leaderboard page may be open. Pages without the hook (the picker) can
+// update any time.
 //
 // Visit any page with ?sw=off once to unregister and clear the caches on this browser
 // (remembered in localStorage); ?sw=on turns it back on.
@@ -35,7 +36,8 @@
   }
 
   function safeToUpdate() {
-    if (document.querySelector("dialog[open]")) return false;
+    // Not while the player is reading something: a dialog, or the leaderboard page.
+    if (document.querySelector("dialog[open], #gg-leaderboard-page:not([hidden])")) return false;
     const canUpdate = window.guyGamesCanUpdate;
     return typeof canUpdate !== "function" || Boolean(canUpdate());
   }

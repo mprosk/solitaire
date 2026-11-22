@@ -864,3 +864,9 @@ dialog::backdrop {
     transition: none;
   }
 }
+
+/* While dragging: the card the drop would pair with. */
+.playing-card.drop-target {
+  outline: 4px solid var(--gold);
+  outline-offset: 2px;
+}
