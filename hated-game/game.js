@@ -1627,6 +1627,9 @@
     if (document.visibilityState === "hidden") sendDeadEndOnExit();
   });
 
+  // ../sw-register.js switches to a newly downloaded build only when this says it's safe.
+  window.guyGamesCanUpdate = () => !hasProgress();
+
   let allowUnload = false;
 
   window.addEventListener("resize", render);

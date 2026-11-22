@@ -41,6 +41,9 @@ jobs:
             --exclude '/LICENSE' \
             ./ _site/
           printf '{"sha":"%s"}\n' "$GITHUB_SHA" > _site/build.json
+          # Stamp the service worker with this build and every file it should cache, so
+          # each deploy installs as one complete, offline-ready build.
+          python3 scripts/build_sw.py _site "$GITHUB_SHA"
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 import http.server
 import mimetypes
 import socket
@@ -17,6 +18,9 @@ import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "scripts"))
+from build_sw import dev_build_id, render_sw  # noqa: E402
+
 CERT = ROOT / "certs" / "cert.pem"
 KEY = ROOT / "certs" / "key.pem"
 
@@ -31,11 +35,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def send_head(self):
         # LAN-visible, so never hand out .env, .git/, or other dotfiles.
-        parts = urllib.parse.unquote(self.path.split("?", 1)[0]).split("/")
+        path = urllib.parse.unquote(self.path.split("?", 1)[0])
+        parts = path.split("/")
         if any(part.startswith(".") and part not in ("", ".well-known") for part in parts):
             self.send_error(404)
             return None
+        if path == "/sw.js":
+            return self.send_stamped_sw()
         return super().send_head()
+
+    def send_stamped_sw(self):
+        # Stamped like a deploy (scripts/build_sw.py), with a build id that changes on
+        # every edit, so local changes reach the cache the same way a release does.
+        body = render_sw(ROOT, dev_build_id(ROOT)).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/javascript")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        return io.BytesIO(body)
 
     def list_directory(self, path):
         self.send_error(404)
@@ -44,7 +61,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         # Dev ergonomics: never let the browser HTTP-cache game assets, so a
         # plain reload always picks up fresh CSS/JS (the service worker cache
-        # is a separate layer — see ?sw=off in hated-game/index.html).
+        # is a separate layer: it serves a build's files until a new build installs;
+        # visit with ?sw=off to bypass it entirely).
         if self.path.split("?")[0].lower().endswith(
             (".html", ".css", ".js", ".webmanifest")
         ):

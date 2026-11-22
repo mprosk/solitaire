@@ -23,8 +23,9 @@ http://127.0.0.1:8888/hated-game/?sw=off&stacked=1
 ```
 
 - `?sw=off` unregisters the service worker on your browser and remembers the opt-out.
-  The worker is network-first for HTML/CSS/JS, so this is mostly for ruling it out
-  while debugging caching. `?sw=on` re-enables.
+  The site-wide worker serves a whole build from its cache and switches builds between
+  games (serve.py stamps a new build on every edit), so this is mostly for ruling it
+  out while debugging caching. `?sw=on` re-enables.
 - `?stacked=1` deals a deterministic board with a legal 3-card stack on pile 3 and
   bypasses the session restore, so every reload lands on a board you can drag-test
   immediately — no re-dealing for a lucky hand. Stacked deals never post results to
