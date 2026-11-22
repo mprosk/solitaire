@@ -30,7 +30,7 @@
   const DRAW_COUNT = 3;
   const DEFAULT_STATUS =
     "Tap two cards that add up to 13 (a King goes on its own), or tap the deck to turn three.";
-  const VERSION = "v2.13";
+  const VERSION = "v2.14";
   const GAME_SLUG = "pyramid";
   const STORAGE_KEY = "pyramid:save-v1";
   const OPTIONS_KEY = "pyramid:options-v1";
@@ -113,7 +113,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.13";
+    link.href = "../lib/guygames-ui.css?v=2.14";
     document.head.append(link);
   }
 
