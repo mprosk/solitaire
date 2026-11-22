@@ -86,6 +86,12 @@
   let dealResultSubmitted = false;
   /** client_result_id with an insert in flight, so auth events don't double-submit. */
   let submittingResultId = null;
+  /**
+   * With the game-over alert off, a dead end doesn't end the deal: the player plays on
+   * until they see it for themselves. This is the best score reached at a dead end
+   * (null if none yet); it's recorded as a loss on New game or when they leave.
+   */
+  let deadEndScore = null;
 
   /** Auth/leaderboard load on demand so the first paint isn't fighting the CDN. */
   let account = null;
@@ -223,6 +229,11 @@
   function setAlertOnGameOver(enabled) {
     options.alertOnGameOver = enabled;
     persistOptions();
+    // Turning the alert back on while stuck ends the deal now.
+    if (enabled && state && !state.gameOver) {
+      evaluateGame();
+      render();
+    }
   }
 
   function createDeck() {
@@ -259,6 +270,7 @@
           history: history.slice(-20),
           dealResultId,
           dealResultSubmitted,
+          deadEndScore,
         }),
       );
     } catch {
@@ -281,6 +293,7 @@
       history = Array.isArray(saved.history) ? saved.history : [];
       dealResultId = saved.dealResultId || newResultId();
       dealResultSubmitted = Boolean(saved.dealResultSubmitted);
+      deadEndScore = Number.isInteger(saved.deadEndScore) ? saved.deadEndScore : null;
       transientStatus = null;
       render();
       return true;
@@ -294,11 +307,11 @@
   }
 
   /** @param {"win" | "loss" | "forfeit"} outcome */
-  function dealResultPayload(outcome, clientResultId) {
+  function dealResultPayload(outcome, clientResultId, resultScore = score()) {
     return {
       game_slug: GAME_SLUG,
       outcome,
-      score: score(),
+      score: resultScore,
       extra: {},
       client_result_id: clientResultId,
     };
@@ -308,13 +321,14 @@
    * Record this deal's result for a signed-in player. Signed-out results are dropped;
    * a win stays in `state` so signing in right after can still credit it.
    * @param {"win" | "loss" | "forfeit"} outcome
+   * @param {number} [resultScore] defaults to the current score
    */
-  async function submitDealOutcome(outcome) {
+  async function submitDealOutcome(outcome, resultScore) {
     if (dealResultSubmitted) return;
     // Capture before awaiting: "New game" can replace the deal while auth loads.
     const clientResultId = dealResultId;
     if (submittingResultId === clientResultId) return;
-    const payload = dealResultPayload(outcome, clientResultId);
+    const payload = dealResultPayload(outcome, clientResultId, resultScore);
 
     submittingResultId = clientResultId;
     try {
@@ -323,9 +337,10 @@
         data: { session },
       } = await supabaseApi.getSession();
       if (!session) return;
-      const { error } = await supabaseApi.insertGameResult(payload);
+      // A failed send stays queued in the outbox and is retried, so it counts as sent.
+      const { error, queued } = await supabaseApi.insertGameResult(payload);
       // Only while the deal is still over: undo or restart may have reopened it mid-request.
-      if (!error && clientResultId === dealResultId && state?.gameOver) {
+      if ((!error || queued) && clientResultId === dealResultId && state?.gameOver) {
         dealResultSubmitted = true;
         persistGame();
       }
@@ -350,7 +365,11 @@
           : "Start a new game? This deal will be lost.",
       );
       if (!ok) return;
-      void submitDealOutcome("forfeit").finally(() => startNewGame());
+      // A deal that hit a dead end (alert off) is a loss at its best dead-end score.
+      const outcome = deadEndScore === null ? "forfeit" : "loss";
+      void submitDealOutcome(outcome, Math.max(score(), deadEndScore ?? 0)).finally(() =>
+        startNewGame(),
+      );
       return;
     }
     startNewGame();
@@ -386,6 +405,7 @@
     justTurnedId = null;
     dealResultId = newResultId();
     dealResultSubmitted = false;
+    deadEndScore = null;
     closeDialog(elements.result);
     closeMenu();
     render();
@@ -571,8 +591,14 @@
       return;
     }
     if (!hasScoringGroup()) {
+      // Alert off: no telling. Play goes on (and undo) until they choose New game.
+      if (!options.alertOnGameOver) {
+        deadEndScore = Math.max(deadEndScore ?? 0, score());
+        persistGame();
+        return;
+      }
       state.gameOver = "loss";
-      void submitDealOutcome("loss");
+      void submitDealOutcome("loss", Math.max(score(), deadEndScore ?? 0));
       showResult("loss");
     }
   }
@@ -957,6 +983,19 @@
   elements.resultLogin?.addEventListener("click", () => {
     closeDialog(elements.result);
     void loadAuthFeatures().then(({ account: auth }) => auth.openLogin({ title: "Create account" }));
+  });
+
+  /** Leaving a deal that hit a dead end (alert off) records its loss. */
+  function sendDeadEndOnExit() {
+    if (deadEndScore === null || !state || state.gameOver || state.winDeclared) return;
+    if (state.devDeal || !supabaseApi) return;
+    supabaseApi.sendGameResultOnExit(
+      dealResultPayload("loss", dealResultId, Math.max(score(), deadEndScore)),
+    );
+  }
+  window.addEventListener("pagehide", sendDeadEndOnExit);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") sendDeadEndOnExit();
   });
 
   let allowUnload = false;
