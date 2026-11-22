@@ -24,7 +24,7 @@
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const DEFAULT_STATUS = "Drag a card to where it should go.";
   const FILL_STATUS = "Fill the empty spot in the cross before turning another card.";
-  const VERSION = "v2.12";
+  const VERSION = "v2.13";
   const GAME_SLUG = "aunt-ellas-cross";
   const STORAGE_KEY = "aunt-ellas-cross:save-v1";
   const OPTIONS_KEY = "aunt-ellas-cross:options-v1";
@@ -112,7 +112,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.12";
+    link.href = "../lib/guygames-ui.css?v=2.13";
     document.head.append(link);
   }
 
