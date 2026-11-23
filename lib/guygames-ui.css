@@ -419,3 +419,17 @@ body.leaderboard-open {
 .result-leaderboard[hidden] {
   display: none;
 }
+
+/* "Apply to all games?" after changing an option every game shares. */
+.gg-scope-dialog {
+  width: min(calc(100% - 32px), 360px);
+}
+
+.gg-scope-dialog .dialog-heading {
+  margin-bottom: 8px;
+}
+
+.gg-scope-dialog .gg-field-hint {
+  margin: 0 0 18px;
+  line-height: 1.45;
+}

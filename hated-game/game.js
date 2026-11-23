@@ -125,16 +125,33 @@
     return authFeaturesPromise;
   }
 
+  /**
+   * Where options start before this game has any saved: the built-in defaults, with
+   * whatever the player applied to all games on top (lib/game-options.js writes it).
+   */
+  function baseOptions() {
+    try {
+      const shared = JSON.parse(window.localStorage.getItem("guygames:default-options"));
+      return {
+        ...DEFAULT_OPTIONS,
+        ...(typeof shared?.alertOnGameOver === "boolean" && {
+          alertOnGameOver: shared.alertOnGameOver,
+        }),
+      };
+    } catch {
+      return { ...DEFAULT_OPTIONS };
+    }
+  }
+
   /** Saved options (local or from the account) with anything missing or invalid defaulted. */
   function normalizeOptions(saved) {
+    const base = baseOptions();
     return {
       deckPosition: DECK_POSITIONS.includes(saved?.deckPosition)
         ? saved.deckPosition
-        : DEFAULT_OPTIONS.deckPosition,
+        : base.deckPosition,
       alertOnGameOver:
-        typeof saved?.alertOnGameOver === "boolean"
-          ? saved.alertOnGameOver
-          : DEFAULT_OPTIONS.alertOnGameOver,
+        typeof saved?.alertOnGameOver === "boolean" ? saved.alertOnGameOver : base.alertOnGameOver,
     };
   }
 
@@ -143,7 +160,7 @@
       return normalizeOptions(JSON.parse(window.localStorage.getItem(OPTIONS_KEY)));
     } catch {
       // Fall back to defaults when storage is unavailable or corrupt.
-      return { ...DEFAULT_OPTIONS };
+      return baseOptions();
     }
   }
 
@@ -169,8 +186,8 @@
   let optionsSyncedFor = null;
 
   /**
-   * On sign-in, the account's saved options win; an account with none saved yet
-   * takes this device's.
+   * On sign-in, the account's saved options win; an account with none saved for this
+   * game yet takes this device's, with anything the player applied to all games on top.
    */
   async function syncOptions(user) {
     if (!user) {
@@ -180,16 +197,18 @@
     if (optionsSyncedFor === user.id) return;
     optionsSyncedFor = user.id;
     try {
-      const { data, error } = await supabaseApi.fetchGameSettings(GAME_SLUG);
+      const { data, defaults, error } = await supabaseApi.fetchGameSettings(GAME_SLUG);
       if (error) throw error;
-      if (!data) {
-        await supabaseApi.saveGameSettings(GAME_SLUG, options);
-        return;
+      if (defaults) {
+        void import("../lib/game-options.js").then(({ rememberDefaults }) =>
+          rememberDefaults(defaults),
+        );
       }
-      options = normalizeOptions(data);
+      options = normalizeOptions(data ? { ...defaults, ...data } : { ...options, ...defaults });
       persistLocalOptions();
       applyOptions();
       render();
+      if (!data) await supabaseApi.saveGameSettings(GAME_SLUG, options);
     } catch {
       // Retry on the next auth event.
       optionsSyncedFor = null;
@@ -1573,8 +1592,18 @@
       if (input.checked) setDeckPosition(input.value);
     });
   });
-  elements.alertOnGameOver.addEventListener("change", () => {
-    setAlertOnGameOver(elements.alertOnGameOver.checked);
+  elements.alertOnGameOver.addEventListener("change", async () => {
+    const enabled = elements.alertOnGameOver.checked;
+    // Ask first: turning the alert on while stuck ends the deal, which shouldn't
+    // happen underneath the question.
+    ensureGuyGamesStyles();
+    try {
+      const { offerToApplyToAllGames } = await import("../lib/game-options.js");
+      await offerToApplyToAllGames("alertOnGameOver", enabled);
+    } catch {
+      // Couldn't ask (module failed to load): it applies to this game.
+    }
+    setAlertOnGameOver(enabled);
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && elements.menu.classList.contains("is-open")) {
