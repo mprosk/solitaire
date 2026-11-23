@@ -31,7 +31,7 @@
   const END_CARDS = 3;
   const DEFAULT_STATUS =
     "Tap three cards in a row at the ends that add up to 10, 20 or 30, or turn a card.";
-  const VERSION = "v2.14";
+  const VERSION = "v2.15";
   const GAME_SLUG = "tensies";
   const STORAGE_KEY = "tensies:save-v1";
   const OPTIONS_KEY = "tensies:options-v1";
@@ -105,7 +105,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.14";
+    link.href = "../lib/guygames-ui.css?v=2.15";
     document.head.append(link);
   }
 
