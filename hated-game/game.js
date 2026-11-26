@@ -1611,8 +1611,13 @@
       return;
     }
 
-    const undoKey =
-      (event.key === "z" || event.key === "Z") && (event.metaKey || event.ctrlKey) && !event.altKey;
+    // event.key covers remapped Latin layouts (AZERTY, Dvorak); event.code covers
+    // non-Latin layouts (Cyrillic, Greek, …) whose Z key types another letter.
+    const zKey =
+      event.key === "z" ||
+      event.key === "Z" ||
+      (event.code === "KeyZ" && /[^\x00-\x7f]/.test(event.key));
+    const undoKey = zKey && (event.metaKey || event.ctrlKey) && !event.altKey;
     if (!undoKey || event.shiftKey) return;
 
     const target = event.target;
