@@ -82,6 +82,8 @@
    * (null if none yet); it's recorded as a loss on New game or when they leave.
    */
   let deadEndScore = null;
+  /** The board (as JSON) where that dead end was last seen; a match means it's still lost. */
+  let deadEndPosition = null;
 
   /** Auth/leaderboard load on demand so the first paint isn't fighting the CDN. */
   let account = null;
@@ -380,14 +382,22 @@
     if (state?.winDeclared && !dealResultSubmitted) void submitDealOutcome("win");
   }
 
+  /** Alert off and the board is still at its dead end: the deal is already lost. */
+  function isAtDeadEnd() {
+    return deadEndPosition !== null && deadEndPosition === JSON.stringify(state);
+  }
+
   function requestNewGame() {
     if (isActiveDeal()) {
       const signedIn = Boolean(account?.getState().user);
-      const ok = window.confirm(
-        signedIn
-          ? "Forfeit this game? It will be counted as a game loss on the leaderboard."
-          : "Start a new game? This deal will be lost.",
-      );
+      // Nothing left to forfeit at a dead end, so don't ask as if the game were still on.
+      const ok =
+        isAtDeadEnd() ||
+        window.confirm(
+          signedIn
+            ? "Forfeit this game? It will be counted as a game loss on the leaderboard."
+            : "Start a new game? This deal will be lost.",
+        );
       if (!ok) return;
       // A deal that hit a dead end (alert off) is a loss at its best dead-end score.
       const outcome = deadEndScore === null ? "forfeit" : "loss";
@@ -439,6 +449,7 @@
     dealResultId = newResultId();
     dealResultSubmitted = false;
     deadEndScore = null;
+    deadEndPosition = null;
     closeDialog(elements.result);
     closeMenu();
     render();
@@ -964,6 +975,7 @@
       // Alert off: no telling. Play goes on (and undo) until they choose New game.
       if (!options.alertOnGameOver) {
         deadEndScore = Math.max(deadEndScore ?? 0, score());
+        deadEndPosition = JSON.stringify(state);
         persistGame();
         return;
       }
