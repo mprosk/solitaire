@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="24" height="42">
+      <rect width="24" height="42" fill="#7a1622"/>
+      <polygon points="12,0 18,10.5 12,21 6,10.5" fill="#a3323f"/>
+      <polygon points="0,21 6,31.5 0,42 -6,31.5" fill="#a3323f"/>
+      <polygon points="24,21 30,31.5 24,42 18,31.5" fill="#a3323f"/>
+      <polygon points="12,21 18,31.5 12,42 6,31.5" fill="#a3323f"/>
+      <polygon points="0,0 6,10.5 0,21 -6,10.5" fill="#c4535f"/>
+      <polygon points="24,0 30,10.5 24,21 18,10.5" fill="#c4535f"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <g id="card">
+      <rect width="132.0" height="184.8" rx="12" ry="12" fill="#f3e9d5"/>
+      <rect x="7" y="7" width="118.0" height="170.8" rx="8" ry="8"
+            fill="url(#cardBack)" stroke="#7a1622" stroke-width="3"/>
+    </g>
+  </defs>
+
+  <!-- Felt background fills the whole canvas so any mask shape looks clean -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!-- A row of three face-down cards: the last leapfrogs the middle one onto the first. -->
+  <use href="#card" x="50.0" y="218.0" filter="url(#shadow)"/>
+  <use href="#card" x="190.0" y="218.0" filter="url(#shadow)"/>
+  <use href="#card" x="330.0" y="218.0" filter="url(#shadow)"/>
+  <path d="M 395.6 200 A 140 140 0 0 0 118.1 186" fill="none" stroke="#e8c46b" stroke-width="22" stroke-linecap="butt"/>
+  <circle cx="395.6" cy="200" r="11" fill="#e8c46b"/>
+  <polygon points="88,180 144,180 116,214" fill="#e8c46b" stroke="#e8c46b" stroke-width="6" stroke-linejoin="round"/>
+</svg>
