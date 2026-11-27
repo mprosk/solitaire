@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <pattern id="cardBack" patternUnits="userSpaceOnUse" width="16" height="28">
+      <rect width="16" height="28" fill="#7a1622"/>
+      <polygon points="8,0 12,7 8,14 4,7" fill="#a3323f"/>
+      <polygon points="0,14 4,21 0,28 -4,21" fill="#a3323f"/>
+      <polygon points="16,14 20,21 16,28 12,21" fill="#a3323f"/>
+      <polygon points="8,14 12,21 8,28 4,21" fill="#a3323f"/>
+      <polygon points="0,0 4,7 0,14 -4,7" fill="#c4535f"/>
+      <polygon points="16,0 20,7 16,14 12,7" fill="#c4535f"/>
+    </pattern>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <g id="back">
+      <rect width="96.0" height="134.4" rx="9" ry="9" fill="#f3e9d5"/>
+      <rect x="6" y="6" width="84.0" height="122.4" rx="6" ry="6"
+            fill="url(#cardBack)" stroke="#7a1622" stroke-width="2"/>
+    </g>
+  </defs>
+
+  <!-- Felt background fills the whole canvas so any mask shape looks clean -->
+  <rect width="512" height="512" fill="#18563d"/>
+  <circle cx="256" cy="256" r="220" fill="#103d2c" opacity="0.45"/>
+
+  <!-- The solitaire staircase: more face-down cards in each column, one face up on each. -->
+  <g transform="translate(256 256) scale(0.8) translate(-256 -256)">
+  <g transform="translate(40.0 144.0)" filter="url(#shadow)">
+    <rect width="96.0" height="134.4" rx="9" fill="#f7f1e5" stroke="#000" stroke-opacity="0.18" stroke-width="1.2"/>
+    <text x="17.1" y="33.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30.9" fill="#b92f3d">A</text>
+    <text x="17.1" y="59.4" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24.0" fill="#b92f3d">♦&#xFE0E;</text>
+    <text x="56.0" y="97.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="57.1" fill="#b92f3d">♦&#xFE0E;</text>
+  </g>
+  <use href="#back" x="152.0" y="144.0" filter="url(#shadow)"/>
+  <g transform="translate(152.0 174.0)" filter="url(#shadow)">
+    <rect width="96.0" height="134.4" rx="9" fill="#f7f1e5" stroke="#000" stroke-opacity="0.18" stroke-width="1.2"/>
+    <text x="17.1" y="33.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30.9" fill="#b92f3d">A</text>
+    <text x="17.1" y="59.4" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24.0" fill="#b92f3d">♥&#xFE0E;</text>
+    <text x="56.0" y="97.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="57.1" fill="#b92f3d">♥&#xFE0E;</text>
+  </g>
+  <use href="#back" x="264.0" y="144.0" filter="url(#shadow)"/>
+  <use href="#back" x="264.0" y="174.0" filter="url(#shadow)"/>
+  <g transform="translate(264.0 204.0)" filter="url(#shadow)">
+    <rect width="96.0" height="134.4" rx="9" fill="#f7f1e5" stroke="#000" stroke-opacity="0.18" stroke-width="1.2"/>
+    <text x="17.1" y="33.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30.9" fill="#b92f3d">2</text>
+    <text x="17.1" y="59.4" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24.0" fill="#b92f3d">♥&#xFE0E;</text>
+    <text x="56.0" y="97.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="57.1" fill="#b92f3d">♥&#xFE0E;</text>
+  </g>
+  <use href="#back" x="376.0" y="144.0" filter="url(#shadow)"/>
+  <use href="#back" x="376.0" y="174.0" filter="url(#shadow)"/>
+  <use href="#back" x="376.0" y="204.0" filter="url(#shadow)"/>
+  <g transform="translate(376.0 234.0)" filter="url(#shadow)">
+    <rect width="96.0" height="134.4" rx="9" fill="#f7f1e5" stroke="#000" stroke-opacity="0.18" stroke-width="1.2"/>
+    <text x="17.1" y="33.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30.9" fill="#19201d">8</text>
+    <text x="17.1" y="59.4" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24.0" fill="#19201d">♣&#xFE0E;</text>
+    <text x="56.0" y="97.1" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="57.1" fill="#19201d">♣&#xFE0E;</text>
+  </g>
+  </g>
+</svg>
