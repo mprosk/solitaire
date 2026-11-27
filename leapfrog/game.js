@@ -30,7 +30,7 @@
   const WIN_SCORE = DECK_SIZE - 1;
   const DEFAULT_STATUS =
     "Put a stack on the one before it or two back when the top cards share a suit or rank, or deal a card.";
-  const VERSION = "v2.18";
+  const VERSION = "v2.19";
   const GAME_SLUG = "leapfrog";
   const STORAGE_KEY = "leapfrog:save-v1";
   const OPTIONS_KEY = "leapfrog:options-v1";
@@ -99,7 +99,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.18";
+    link.href = "../lib/guygames-ui.css?v=2.19";
     document.head.append(link);
   }
 
