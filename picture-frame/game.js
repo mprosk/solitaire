@@ -284,28 +284,47 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  /**
+   * Saved per tab (sessionStorage) and per browser (localStorage). Android discards a
+   * backgrounded home-screen app, or a back swipe closes it, and the relaunch starts a
+   * fresh session with empty sessionStorage: without the localStorage copy that dealt a
+   * new game out from under the player. The tab's own copy still wins, so two tabs
+   * each keep their game across reloads.
+   */
   function persistGame() {
     if (!state || !originalDeal) return;
-    try {
-      window.sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          state,
-          originalDeal,
-          history: history.slice(-20),
-          dealResultId,
-          dealResultSubmitted,
-          deadEndScore,
-        }),
-      );
-    } catch {
-      // The game remains playable when browser storage is unavailable.
+    const saved = JSON.stringify({
+      state,
+      originalDeal,
+      history: history.slice(-20),
+      dealResultId,
+      dealResultSubmitted,
+      deadEndScore,
+    });
+    for (const storageName of ["sessionStorage", "localStorage"]) {
+      try {
+        window[storageName].setItem(STORAGE_KEY, saved);
+      } catch {
+        // The game remains playable when browser storage is unavailable.
+      }
     }
+  }
+
+  function readSavedGame() {
+    for (const storageName of ["sessionStorage", "localStorage"]) {
+      try {
+        const saved = window[storageName].getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // Try the other one.
+      }
+    }
+    return null;
   }
 
   function restoreSavedGame() {
     try {
-      const saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY));
+      const saved = readSavedGame();
       if (!saved?.state?.stock || saved.state.grid?.length !== CELL_COUNT || !saved?.originalDeal) {
         return false;
       }
