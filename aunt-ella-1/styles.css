@@ -10,6 +10,10 @@
   /* Board height in card widths (foundations + a column of runs) and in fixed chrome. */
   --height-units: 4.6;
   --chrome-height: 190px;
+  /* Room kept under the columns (status line, New game) when long runs squeeze up. */
+  --below-tableau: 70px;
+  /* Card widths of foundations beside the columns rather than above them. */
+  --side-columns: 0;
   --topbar-height: 64px;
   --topbar-inline: clamp(12px, 3vw, 28px);
   --menu-button-size: 42px;
@@ -866,6 +870,122 @@ dialog::backdrop {
 
   h1 {
     font-size: 1.15rem;
+  }
+}
+
+/* A phone on its side: too short for a title bar and the foundations above the columns.
+   The menu button and score shrink into the top of a panel on the left, over the cheat
+   counter and the foundations, and the columns start at the top of the screen. Touch
+   only: a short desktop window keeps the regular layout. game.js reads --side-columns,
+   --chrome-height, --height-units and --below-tableau to size the cards, and sets
+   --side-width for the top bar to match the panel. */
+@media (orientation: landscape) and (max-height: 540px) and (pointer: coarse) {
+  :root {
+    --topbar-height: 44px;
+    --topbar-inline: max(12px, env(safe-area-inset-left));
+    --menu-button-size: 38px;
+    /* Board padding and the status line. */
+    --chrome-height: 46px;
+    /* A card, the face-down strip above it and room for a few cards fanned below. */
+    --height-units: 4.4;
+    --below-tableau: 34px;
+    --side-columns: 2;
+  }
+
+  /* No bar: the menu button and score float over the panel's top row. */
+  .topbar {
+    position: absolute;
+    top: 0;
+    left: var(--topbar-inline);
+    z-index: 5;
+    width: var(--side-width, 140px);
+    min-height: var(--topbar-height);
+    padding: 0;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    gap: 6px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  /* The title is in the app switcher already; screen readers still get it. */
+  h1 {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .score {
+    min-height: 30px;
+    padding: 4px 9px;
+    gap: 4px;
+  }
+
+  .score > span:first-child {
+    font-size: 0.58rem;
+  }
+
+  main {
+    width: 100%;
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px var(--topbar-inline);
+    column-gap: clamp(14px, 2.5vw, 28px);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "foundations tableau"
+      "newgame tableau"
+      ". status";
+  }
+
+  .top-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 8px;
+    /* Under the menu button and score. */
+    margin: calc(var(--topbar-height) - 8px) 0 0;
+  }
+
+  .foundations {
+    display: grid;
+    grid-template-columns: repeat(2, var(--card-width));
+  }
+
+  .cheat-counter {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 6px 8px;
+  }
+
+  .cheat-counter strong {
+    font-size: 1.1rem;
+  }
+
+  .status {
+    min-height: 18px;
+    margin-top: 6px;
+    font-size: 0.75rem;
+  }
+
+  /* Taller than the screen held sideways: scroll to the account buttons. */
+  .menu-drawer {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .board-new-game.primary-button {
+    align-self: start;
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    margin: 12px 0 0;
+    padding-inline: 8px;
   }
 }
 

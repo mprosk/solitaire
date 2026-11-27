@@ -768,15 +768,38 @@
     );
   }
 
-  /** Card width that fits every column (and the new-column spot) across the board. */
+  /** A length or count the stylesheet sets for the current layout (see styles.css). */
+  function layoutValue(name, fallback) {
+    const value = parseFloat(window.getComputedStyle(elements.board).getPropertyValue(name));
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  /**
+   * Card width that fits every column (and the new-column spot) across the board. On a
+   * phone held sideways the foundations sit in a side panel (--side-columns cards wide)
+   * left of the columns, so they share the width.
+   */
   function layoutColumns(slots) {
-    const width = elements.tableau.clientWidth;
+    const boardStyle = window.getComputedStyle(elements.board);
+    const width =
+      elements.board.clientWidth -
+      (parseFloat(boardStyle.paddingLeft) || 0) -
+      (parseFloat(boardStyle.paddingRight) || 0);
     const gap = parseFloat(window.getComputedStyle(elements.tableau).columnGap) || 0;
-    const byWidth = (width - gap * (slots - 1)) / slots;
-    const byHeight = (window.innerHeight - 190) / 4.6;
+    const sideColumns = layoutValue("--side-columns", 0);
+    const sideRoom = sideColumns
+      ? (parseFloat(boardStyle.columnGap) || 0) + gap * (sideColumns - 1)
+      : 0;
+    const byWidth = (width - sideRoom - gap * (slots - 1)) / (slots + sideColumns);
+    const byHeight =
+      (window.innerHeight - layoutValue("--chrome-height", 190)) / layoutValue("--height-units", 4.6);
     const cardWidth = Math.max(28, Math.floor(Math.min(MAX_CARD_WIDTH, byWidth, byHeight)));
     elements.board.style.setProperty("--card-width", `${cardWidth}px`);
     elements.board.style.setProperty("--columns", String(slots));
+    // The top bar sits outside main: it lines up with the side panel by this width.
+    const root = document.documentElement.style;
+    if (sideColumns) root.setProperty("--side-width", `${sideColumns * cardWidth + gap * (sideColumns - 1)}px`);
+    else root.removeProperty("--side-width");
     return { cardWidth, cardHeight: cardWidth * 1.4 };
   }
 
@@ -788,7 +811,8 @@
     const roomy = Math.max(size.cardHeight * 0.27, size.cardWidth * 0.42);
     if (length < 2) return roomy;
     const top = elements.tableau.getBoundingClientRect().top + window.scrollY;
-    const room = window.innerHeight - top - 70 - startOffset - size.cardHeight;
+    const below = layoutValue("--below-tableau", 70);
+    const room = window.innerHeight - top - below - startOffset - size.cardHeight;
     const readable = Math.max(16, size.cardWidth * 0.36);
     return Math.max(readable, Math.min(roomy, room / (length - 1)));
   }
