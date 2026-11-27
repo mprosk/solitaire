@@ -27,7 +27,7 @@
   /** Every card discarded: an empty hand. */
   const WIN_SCORE = DECK_SIZE;
   const DEFAULT_STATUS = "Tap the cards to discard when they make a play, or pick up a card.";
-  const VERSION = "v2.16";
+  const VERSION = "v2.18";
   const GAME_SLUG = "subway";
   const STORAGE_KEY = "subway:save-v1";
   const OPTIONS_KEY = "subway:options-v1";
@@ -93,7 +93,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.16";
+    link.href = "../lib/guygames-ui.css?v=2.18";
     document.head.append(link);
   }
 

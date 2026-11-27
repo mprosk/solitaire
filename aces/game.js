@@ -29,7 +29,7 @@
   const WIN_SCORE = DECK_SIZE - PILE_COUNT;
   const DEFAULT_STATUS =
     "Tap a bottom card to discard it when a higher card of its suit is showing, or deal four more.";
-  const VERSION = "v2.17";
+  const VERSION = "v2.18";
   const GAME_SLUG = "aces";
   const STORAGE_KEY = "aces:save-v1";
   const OPTIONS_KEY = "aces:options-v1";
@@ -98,7 +98,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.17";
+    link.href = "../lib/guygames-ui.css?v=2.18";
     document.head.append(link);
   }
 

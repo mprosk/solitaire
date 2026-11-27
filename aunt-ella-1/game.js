@@ -36,7 +36,7 @@
   const MAX_CARD_WIDTH = 96;
   const DEFAULT_STATUS =
     "Tap a card to move it up to its foundation, or onto the next higher card of its suit.";
-  const VERSION = "v2.16";
+  const VERSION = "v2.18";
   const GAME_SLUG = "aunt-ella-1";
   const STORAGE_KEY = "aunt-ella-1:save-v1";
   const OPTIONS_KEY = "aunt-ella-1:options-v1";
@@ -109,7 +109,7 @@
     const link = document.createElement("link");
     link.id = "gg-ui-css";
     link.rel = "stylesheet";
-    link.href = "../lib/guygames-ui.css?v=2.16";
+    link.href = "../lib/guygames-ui.css?v=2.18";
     document.head.append(link);
   }
 
