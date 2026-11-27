@@ -949,18 +949,8 @@
     return width > 0 && height > 0 ? width * height : 0;
   }
 
-  /**
-   * Where a drop is meant to go, read loosely (as in Pyramid): the valid target the
-   * held card overlaps most, else the nearest one within reach of its center. With only
-   * one valid target the reach is wider, since there's nothing else it could mean.
-   */
-  function intendedTarget(cardRect) {
-    const targets = dragSession.targets.map((target) => ({
-      ...target,
-      rect: target.element.getBoundingClientRect(),
-    }));
-    if (!targets.length) return null;
-
+  /** The target the held card overlaps most, among these. */
+  function mostOverlapped(targets, cardRect) {
     let best = null;
     let bestOverlap = 0;
     for (const target of targets) {
@@ -970,10 +960,44 @@
         bestOverlap = area;
       }
     }
-    if (best) return best;
+    return best;
+  }
+
+  /**
+   * Where a drop is meant to go, read loosely (as in Pyramid). A foundation the held
+   * card overlaps comes first. Then a column under the card's center, at any height:
+   * long runs reach past the bottom of the screen, so a column is aimed at by its width
+   * alone (to the middle of the gap on each side). Then the valid target the card
+   * overlaps most, else the nearest one within reach of its center. With only one
+   * valid target the reach is wider, since there's nothing else it could mean.
+   */
+  function intendedTarget(cardRect) {
+    const targets = dragSession.targets.map((target) => ({
+      ...target,
+      rect: target.element.getBoundingClientRect(),
+    }));
+    if (!targets.length) return null;
+
+    const foundation = mostOverlapped(
+      targets.filter((target) => target.move.kind === "up"),
+      cardRect,
+    );
+    if (foundation) return foundation;
 
     const centerX = cardRect.left + cardRect.width / 2;
     const centerY = cardRect.top + cardRect.height / 2;
+    const halfGap = (parseFloat(window.getComputedStyle(elements.tableau).columnGap) || 0) / 2;
+    const underCenter = targets.find(
+      (target) =>
+        target.move.kind !== "up" &&
+        centerX >= target.rect.left - halfGap &&
+        centerX < target.rect.right + halfGap,
+    );
+    if (underCenter) return underCenter;
+
+    const best = mostOverlapped(targets, cardRect);
+    if (best) return best;
+
     const reach = cardRect.width * (targets.length === 1 ? 2 : 1.25);
     let nearest = null;
     let nearestDistance = Infinity;
