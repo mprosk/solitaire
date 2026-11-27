@@ -25,6 +25,8 @@
   const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const FACE_NAMES = { 10: "Jack", 11: "Queen", 12: "King" };
   const KING = 12;
+  /** The only two-character rank: its corner is drawn tighter to fit the card. */
+  const TEN = 9;
   const DECK_SIZE = 52;
   const COLUMN_COUNT = 7;
   /** Cards dealt face up onto each of columns 2-7 after the regular solitaire deal. */
@@ -749,7 +751,7 @@
     const suit = SUITS[card.suit];
     return `
       <div class="playing-card ${suit.color} ${extraClass}" aria-hidden="true">
-        <span class="corner"><span>${RANKS[card.rank]}</span><span>${suit.symbol}</span></span>
+        <span class="corner${card.rank === TEN ? " is-ten" : ""}"><span>${RANKS[card.rank]}</span><span>${suit.symbol}</span></span>
         <span class="suit-large">${suit.symbol}</span>
       </div>
     `;
@@ -832,7 +834,8 @@
     const top = elements.tableau.getBoundingClientRect().top + window.scrollY;
     const below = layoutValue("--below-tableau", 70);
     const room = window.innerHeight - top - below - startOffset - size.cardHeight;
-    const readable = Math.max(16, size.cardWidth * 0.36);
+    // A covered card shows its corner in the strip above the next one.
+    const readable = Math.max(16, size.cardWidth * layoutValue("--covered-strip", 0.36));
     return Math.max(readable, Math.min(roomy, room / (length - 1)));
   }
 

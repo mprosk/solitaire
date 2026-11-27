@@ -14,6 +14,8 @@
   --below-tableau: 70px;
   /* Card widths of foundations beside the columns rather than above them. */
   --side-columns: 0;
+  /* Smallest strip of a covered card left showing in a run, in card widths: the corner. */
+  --covered-strip: 0.56;
   --topbar-height: 64px;
   --topbar-inline: clamp(12px, 3vw, 28px);
   --menu-button-size: 42px;
@@ -35,7 +37,8 @@ main {
     96px
   );
   --card-height: calc(var(--card-width) * 1.4);
-  --corner-font-size: clamp(0.78rem, calc(var(--card-width) * 0.2), 1.9rem);
+  /* The rank and suit run nearly the card's width (a 10 is squeezed to match). */
+  --corner-font-size: calc(var(--card-width) * 0.48);
   --grid-gap: clamp(3px, 1vw, 10px);
 }
 
@@ -462,16 +465,28 @@ body.dragging * {
 
 .playing-card .corner {
   position: absolute;
-  top: 7%;
-  left: 10%;
+  top: 4%;
+  left: 6%;
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 0.12em;
+  gap: 0.04em;
   font-family: Georgia, "Times New Roman", serif;
   font-size: var(--corner-font-size);
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Two digits: smaller and pulled together so "10" and its suit fit like one rank. */
+.playing-card .corner.is-ten {
+  left: 4%;
+  gap: 0.02em;
+  font-size: calc(var(--corner-font-size) * 0.86);
+}
+
+.playing-card .corner.is-ten > span:first-child {
+  letter-spacing: -0.08em;
 }
 
 .playing-card .suit-large {
@@ -832,26 +847,11 @@ dialog::backdrop {
   main {
     padding-inline: 12px;
   }
-
-  .playing-card .corner {
-    top: 6%;
-    left: 8%;
-    gap: 0.06em;
-    font-size: min(calc(var(--card-width) * 0.42), 2rem);
-    white-space: nowrap;
-  }
 }
 
 /* A covered card shows only a strip above the next one: tuck its corner into it. */
 .column-card > .playing-card.is-covered .corner {
-  top: 3%;
-  font-size: min(calc(var(--card-width) * 0.3), var(--corner-font-size));
-}
-
-@media (max-width: 620px) {
-  .column-card > .playing-card.is-covered .corner {
-    font-size: calc(var(--card-width) * 0.3);
-  }
+  top: 2%;
 }
 
 @media (max-width: 410px) {
